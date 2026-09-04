@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавление тарифа</title>
+    <link rel="stylesheet" href="/static/css/add.css">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="add-container">
+        <h1>Новый тариф</h1>
+        <form>
+            <div class="uploads-row">
+                <div class="upload-box">
+                    <span>+</span>
+                    <span>Изображение</span>
+                </div>
+                <div class="upload-box">
+                    <span>+</span>
+                    <span>Видео</span>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Название</label>
+                <input type="text" placeholder="Введите название тарифа..." value="{{ .draft.Title }}">
+            </div>
+            <div class="field">
+                <label>Описание</label>
+                <textarea placeholder="Укажите подробные характеристики...">{{ .draft.Description }}</textarea>
+            </div>
+            <div class="field">
+                <label>Цена (₽)</label>
+                <input type="number" placeholder="Например: 12400" value="{{ .draft.Price }}">
+            </div>
+            <div class="specs-row">
+                <div class="field">
+                    <label>vCPU</label>
+                    <input type="number" placeholder="8" value="{{ .draft.VCPU }}">
+                </div>
+                <div class="field">
+                    <label>RAM (ГБ)</label>
+                    <input type="number" placeholder="32" value="{{ .draft.RAM }}">
+                </div>
+                <div class="field">
+                    <label>Диск (ГБ)</label>
+                    <input type="number" placeholder="500" value="{{ .draft.Disk }}">
+                </div>
+            </div>
+            <button type="button" class="submit-btn">Далее</button>
+        </form>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="/feed">Лента</a>
+        <a href="/add" class="active">Добавление</a>
+        <a href="/grid">Плитка</a>
+    </nav>
+</body>
+</html>
