@@ -2,32 +2,30 @@ package repository
 
 import (
 	"fmt"
+	"sort"
 	"time"
 )
 
 const minioBaseURL = "http://localhost:9000/licensing-images/"
 
-// License
 type License struct {
 	ID           int     `json:"id"`
 	Title        string  `json:"title"`
 	Description  string  `json:"description"`
-	LicenseType  string  `json:"license_type"` // per_user, per_core, subscription
+	LicenseType  string  `json:"license_type"`
 	PricePerUnit float64 `json:"price_per_unit"`
 	MinQuantity  int     `json:"min_quantity"`
 	ImageURL     string  `json:"image_url"`
 	VideoURL     string  `json:"video_url"`
 	Likes        []int   `json:"likes"`
-	Status       string  `json:"status"` // draft, published, deleted
+	Status       string  `json:"status"`
 	CreatedAt    string  `json:"created_at"`
 }
 
-// Repository
 type Repository struct {
 	licenses []License
 }
 
-// NewRepository
 func NewRepository() (*Repository, error) {
 	now := time.Now().Format("2006-01-02 15:04:05")
 	licenses := []License{
@@ -40,7 +38,7 @@ func NewRepository() (*Repository, error) {
 			MinQuantity:  1,
 			ImageURL:     minioBaseURL + "azure_e5.jpg",
 			VideoURL:     minioBaseURL + "azure_e5.mp4",
-			Likes:        []int{3, 7, 15, 22, 31, 45, 56},
+			Likes:        []int{3, 7, 15, 22, 31, 45, 56, 78, 102, 128},
 			Status:       "published",
 			CreatedAt:    now,
 		},
@@ -58,7 +56,7 @@ func NewRepository() (*Repository, error) {
 			CreatedAt:    now,
 		},
 		{
-			ID:           33,
+			ID:           3,
 			Title:        "Azure DevOps Pro",
 			Description:  "Предоставляет полноценный конвейер CI/CD, неограниченные репозитории Git и доски управления проектами для гибких команд.",
 			LicenseType:  "per_user",
@@ -126,7 +124,7 @@ func NewRepository() (*Repository, error) {
 	return &Repository{licenses: licenses}, nil
 }
 
-// GetAllPublished
+// GetAllPublished возвращает все опубликованные лицензии, отсортированные по ID
 func (r *Repository) GetAllPublished() ([]License, error) {
 	var res []License
 	for _, l := range r.licenses {
@@ -137,10 +135,13 @@ func (r *Repository) GetAllPublished() ([]License, error) {
 	if len(res) == 0 {
 		return nil, fmt.Errorf("опубликованных лицензий нет")
 	}
+	// Сортируем по ID возрастанию
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].ID < res[j].ID
+	})
 	return res, nil
 }
 
-// FilterByPrice
 func (r *Repository) FilterByPrice(maxPrice float64) ([]License, error) {
 	pub, err := r.GetAllPublished()
 	if err != nil {
@@ -155,19 +156,21 @@ func (r *Repository) FilterByPrice(maxPrice float64) ([]License, error) {
 	return res, nil
 }
 
-// GetByID
-func (r *Repository) GetByID(id int) (*License, error) {
+func (r *Repository) GetByID(id int) (License, error) {
 	for _, l := range r.licenses {
 		if l.ID == id && l.Status != "deleted" {
-			return &l, nil
+			return l, nil
 		}
 	}
-	return nil, fmt.Errorf("лицензия с ID %d не найдена", id)
+	return License{}, fmt.Errorf("лицензия с ID %d не найдена", id)
 }
 
-// GetNextPublished
+// GetNextPublished возвращает следующую опубликованную лицензию по порядку ID
 func (r *Repository) GetNextPublished(afterID int) (License, error) {
-	pub, _ := r.GetAllPublished()
+	pub, err := r.GetAllPublished()
+	if err != nil {
+		return License{}, err
+	}
 	for i, l := range pub {
 		if l.ID == afterID && i+1 < len(pub) {
 			return pub[i+1], nil
@@ -176,7 +179,6 @@ func (r *Repository) GetNextPublished(afterID int) (License, error) {
 	return License{}, fmt.Errorf("следующей лицензии нет")
 }
 
-// GetDraft
 func (r *Repository) GetDraft() (License, error) {
 	for _, l := range r.licenses {
 		if l.Status == "draft" {

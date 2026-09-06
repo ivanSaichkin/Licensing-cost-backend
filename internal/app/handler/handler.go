@@ -19,7 +19,6 @@ func NewHandler(r *repository.Repository) *Handler {
 	return &Handler{Repo: r}
 }
 
-// GET /grid
 func (h *Handler) Grid(c *gin.Context) {
 	priceParam := c.Query("max_price")
 	var licenses []repository.License
@@ -58,8 +57,6 @@ func (h *Handler) Grid(c *gin.Context) {
 	})
 }
 
-// GET /feed/:id
-// Параметр ?full=true – показать полное описание
 func (h *Handler) Feed(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
@@ -99,7 +96,6 @@ func (h *Handler) Feed(c *gin.Context) {
 	})
 }
 
-// GET /add
 func (h *Handler) Add(c *gin.Context) {
 	draft, err := h.Repo.GetDraft()
 	if err != nil {

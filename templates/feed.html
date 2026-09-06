@@ -24,23 +24,21 @@
                                 <a href="/feed/{{ .license.ID }}?full=true" class="more-link">Больше</a>
                             {{ end }}
                         </div>
-                        <div class="meta">
+                        <div class="meta-row">
                             <span class="price">₽ {{ .license.PricePerUnit }} / мес</span>
-                            <span class="type">{{ .license.LicenseType }}</span>
+                            <a href="#" class="like-btn" onclick="return false;">
+                                <span class="heart">❤️</span>
+                                <span class="like-count">{{ .likeCount }}</span>
+                            </a>
                         </div>
                     </div>
                     <div class="bottom-actions">
-                        <div class="like-section">
-                            <span class="heart">❤️</span>
-                            <span class="like-count">{{ .likeCount }}</span>
-                        </div>
                         <a href="/feed/{{ .license.ID }}?next=true" class="btn-next">Следующий</a>
                     </div>
                 </div>
             </div>
         </main>
 
-        <!-- Нижняя навигация -->
         <nav class="bottom-nav">
             <a href="/feed/1" class="nav-item active">
                 <span class="label">Лента</span>
