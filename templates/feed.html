@@ -2,35 +2,56 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Лента тарифов</title>
-    <link rel="stylesheet" href="/static/css/feed.css">
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Лента</title>
+    <link rel="stylesheet" href="/static/styles/feed.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="feed-container">
-        <!-- Видео (имитация – показываем картинку, т.к. видео в MinIO может отсутствовать) -->
-        <!-- В реальности используйте <video> с атрибутами autoplay muted loop -->
-        <div class="feed-media" style="background-image: url('{{ .tariff.ImageURL }}');"></div>
-        <!-- Или видео: <video src="{{ .tariff.VideoURL }}" autoplay muted loop></video> -->
-        
-        <div class="feed-overlay">
-            <h1>{{ .tariff.Title }}</h1>
-            <p class="desc">{{ .tariff.Description }}</p>
-            <p class="specs">{{ .tariff.VCPU }} vCPU • {{ .tariff.RAM }} ГБ RAM • {{ .tariff.Disk }} ГБ SSD</p>
-            <div class="price-likes">
-                <span class="price">{{ .tariff.Price }} ₽/мес</span>
-                <span class="likes">❤️ {{ len .tariff.Likes }}</span>
+    <div class="app-container">
+        <main class="feed-page">
+            <div class="video-wrapper">
+                <video src="{{ .license.VideoURL }}" autoplay muted loop playsinline></video>
+                <div class="overlay">
+                    <div class="top-info">
+                        <h2>{{ .license.Title }}</h2>
+                        <div class="desc-wrapper">
+                            {{ if .showFull }}
+                                <p class="desc-full">{{ .fullDesc }}</p>
+                                <a href="/feed/{{ .license.ID }}" class="more-link">Меньше</a>
+                            {{ else }}
+                                <p class="desc-short">{{ .shortDesc }}</p>
+                                <a href="/feed/{{ .license.ID }}?full=true" class="more-link">Больше</a>
+                            {{ end }}
+                        </div>
+                        <div class="meta">
+                            <span class="price">₽ {{ .license.PricePerUnit }} / мес</span>
+                            <span class="type">{{ .license.LicenseType }}</span>
+                        </div>
+                    </div>
+                    <div class="bottom-actions">
+                        <div class="like-section">
+                            <span class="heart">❤️</span>
+                            <span class="like-count">{{ .likeCount }}</span>
+                        </div>
+                        <a href="/feed/{{ .license.ID }}?next=true" class="btn-next">Следующий</a>
+                    </div>
+                </div>
             </div>
-            <a href="/feed?id={{ .tariff.ID }}&next=true" class="next-btn">Следующий →</a>
-        </div>
-    </div>
+        </main>
 
-    <!-- Нижняя навигация -->
-    <nav class="bottom-nav">
-        <a href="/feed" class="active">Лента</a>
-        <a href="/add">Добавление</a>
-        <a href="/grid">Плитка</a>
-    </nav>
+        <!-- Нижняя навигация -->
+        <nav class="bottom-nav">
+            <a href="/feed/1" class="nav-item active">
+                <span class="label">Лента</span>
+            </a>
+            <a href="/add" class="nav-item">
+                <span class="label">Добавление</span>
+            </a>
+            <a href="/grid" class="nav-item">
+                <span class="label">Плитка</span>
+            </a>
+        </nav>
+    </div>
 </body>
 </html>

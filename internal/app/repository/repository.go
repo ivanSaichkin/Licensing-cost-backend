@@ -2,171 +2,186 @@ package repository
 
 import (
 	"fmt"
+	"time"
 )
 
-// Tariff — услуга (тариф облачного провайдера)
-type Tariff struct {
-	ID          int      `json:"id"`
-	Title       string   `json:"title"`
-	Description string   `json:"description"`
-	Price       int      `json:"price"`     // цена в рублях
-	VCPU        int      `json:"vcpu"`      // количество vCPU
-	RAM         int      `json:"ram"`       // объём RAM в ГБ
-	Disk        int      `json:"disk"`      // объём диска в ГБ
-	ImageURL    string   `json:"image_url"` // имя файла изображения (будет подставлен URL MinIO)
-	VideoURL    string   `json:"video_url"` // имя файла видео
-	Likes       []string `json:"likes"`     // список ID пользователей, поставивших лайк
-	Status      string   `json:"status"`    // "draft", "published", "deleted"
+const minioBaseURL = "http://localhost:9000/licensing-images/"
+
+// License
+type License struct {
+	ID           int     `json:"id"`
+	Title        string  `json:"title"`
+	Description  string  `json:"description"`
+	LicenseType  string  `json:"license_type"` // per_user, per_core, subscription
+	PricePerUnit float64 `json:"price_per_unit"`
+	MinQuantity  int     `json:"min_quantity"`
+	ImageURL     string  `json:"image_url"`
+	VideoURL     string  `json:"video_url"`
+	Likes        []int   `json:"likes"`
+	Status       string  `json:"status"` // draft, published, deleted
+	CreatedAt    string  `json:"created_at"`
 }
 
-// Repository хранит коллекцию тарифов (имитация БД)
+// Repository
 type Repository struct {
-	tariffs []Tariff
+	licenses []License
 }
 
-// NewRepository создаёт репозиторий с начальными данными
-func NewRepository() *Repository {
-	// Базовый URL для MinIO (убедитесь, что MinIO запущен и бакет создан)
-	// В реальном приложении лучше вынести в конфиг, но по заданию конфига нет.
-	baseURL := "http://localhost:9000/licensing/"
-
-	tariffs := []Tariff{
+// NewRepository
+func NewRepository() (*Repository, error) {
+	now := time.Now().Format("2006-01-02 15:04:05")
+	licenses := []License{
 		{
-			ID:          1,
-			Title:       "Basic S",
-			Description: "Для небольших проектов и тестирования",
-			Price:       3200,
-			VCPU:        1,
-			RAM:         1,
-			Disk:        30,
-			ImageURL:    baseURL + "basic_s.jpg",
-			VideoURL:    baseURL + "basic_s.mp4",
-			Likes:       []string{"user1"},
-			Status:      "published",
+			ID:           1,
+			Title:        "Azure Enterprise E5",
+			Description:  "Полный пакет облачных сервисов для корпоративных клиентов. Включает максимальную безопасность, расширенную аналитику и AI-компоненты.",
+			LicenseType:  "subscription",
+			PricePerUnit: 2490.00,
+			MinQuantity:  1,
+			ImageURL:     minioBaseURL + "azure_e5.jpg",
+			VideoURL:     minioBaseURL + "azure_e5.mp4",
+			Likes:        []int{3, 7, 15, 22, 31, 45, 56},
+			Status:       "published",
+			CreatedAt:    now,
 		},
 		{
-			ID:          2,
-			Title:       "Standard M",
-			Description: "Для веб-приложений средней нагрузки",
-			Price:       6400,
-			VCPU:        2,
-			RAM:         4,
-			Disk:        30,
-			ImageURL:    baseURL + "standard_m.jpg",
-			VideoURL:    baseURL + "standard_m.mp4",
-			Likes:       []string{"user1", "user2", "user3"},
-			Status:      "published",
+			ID:           2,
+			Title:        "Microsoft 365 Business",
+			Description:  "Комплексное решение для малого и среднего бизнеса: Office, Teams, 1 ТБ облачного хранилища.",
+			LicenseType:  "per_user",
+			PricePerUnit: 1200.00,
+			MinQuantity:  1,
+			ImageURL:     minioBaseURL + "m365_business.jpg",
+			VideoURL:     minioBaseURL + "m365_business.mp4",
+			Likes:        []int{5, 10, 18, 25, 33, 42, 50, 60, 70, 80, 90, 100},
+			Status:       "published",
+			CreatedAt:    now,
 		},
 		{
-			ID:          3,
-			Title:       "Pro L",
-			Description: "Для высоконагруженных систем и баз данных",
-			Price:       12400,
-			VCPU:        4,
-			RAM:         8,
-			Disk:        50,
-			ImageURL:    baseURL + "pro_l.jpg",
-			VideoURL:    baseURL + "pro_l.mp4",
-			Likes:       []string{"user2", "user4"},
-			Status:      "published",
+			ID:           33,
+			Title:        "Azure DevOps Pro",
+			Description:  "Предоставляет полноценный конвейер CI/CD, неограниченные репозитории Git и доски управления проектами для гибких команд.",
+			LicenseType:  "per_user",
+			PricePerUnit: 2800.00,
+			MinQuantity:  5,
+			ImageURL:     minioBaseURL + "devops_pro.jpg",
+			VideoURL:     minioBaseURL + "devops_pro.mp4",
+			Likes:        []int{2, 8, 14, 21, 29, 36, 44, 52, 61, 70, 79, 88, 97},
+			Status:       "published",
+			CreatedAt:    now,
 		},
 		{
-			ID:          4,
-			Title:       "Enterprise XL",
-			Description: "Для корпоративных решений и кластеров",
-			Price:       24800,
-			VCPU:        8,
-			RAM:         16,
-			Disk:        100,
-			ImageURL:    baseURL + "enterprise_xl.jpg",
-			VideoURL:    baseURL + "enterprise_xl.mp4",
-			Likes:       []string{"user1", "user5", "user6", "user7"},
-			Status:      "published",
+			ID:           4,
+			Title:        "Power BI Premium",
+			Description:  "Платформа бизнес-аналитики с расширенными возможностями визуализации, отчетами и AI-инсайтами.",
+			LicenseType:  "per_core",
+			PricePerUnit: 3500.00,
+			MinQuantity:  2,
+			ImageURL:     minioBaseURL + "powerbi_premium.jpg",
+			VideoURL:     minioBaseURL + "powerbi_premium.mp4",
+			Likes:        []int{1, 4, 9, 16, 23, 30, 38, 47, 55, 63, 72, 81, 90, 99, 108, 117},
+			Status:       "published",
+			CreatedAt:    now,
 		},
 		{
-			ID:          5,
-			Title:       "Черновик",
-			Description: "Новый тариф в разработке",
-			Price:       500,
-			VCPU:        1,
-			RAM:         2,
-			Disk:        20,
-			ImageURL:    baseURL + "draft.jpg",
-			VideoURL:    baseURL + "draft.mp4",
-			Likes:       []string{},
-			Status:      "draft",
+			ID:           5,
+			Title:        "Dynamics 365 Sales",
+			Description:  "CRM-система для управления взаимоотношениями с клиентами, автоматизации продаж и анализа данных.",
+			LicenseType:  "per_user",
+			PricePerUnit: 5900.00,
+			MinQuantity:  1,
+			ImageURL:     minioBaseURL + "dynamics_sales.jpg",
+			VideoURL:     minioBaseURL + "dynamics_sales.mp4",
+			Likes:        []int{6, 12, 19, 27, 34, 42, 50, 58, 66, 74, 82, 90, 98, 106, 114, 122, 130},
+			Status:       "published",
+			CreatedAt:    now,
 		},
 		{
-			ID:          6,
-			Title:       "Удалённый",
-			Description: "Больше не доступен",
-			Price:       0,
-			VCPU:        0,
-			RAM:         0,
-			Disk:        0,
-			ImageURL:    "",
-			VideoURL:    "",
-			Likes:       []string{},
-			Status:      "deleted",
+			ID:           6,
+			Title:        "Copilot Pro (черновик)",
+			Description:  "Интеграция ИИ в офисные приложения, приоритетный доступ к новым функциям.",
+			LicenseType:  "per_user",
+			PricePerUnit: 300.00,
+			MinQuantity:  1,
+			ImageURL:     minioBaseURL + "copilot_pro.jpg",
+			VideoURL:     minioBaseURL + "copilot_pro.mp4",
+			Likes:        []int{4, 9},
+			Status:       "draft",
+			CreatedAt:    now,
+		},
+		{
+			ID:           7,
+			Title:        "Legacy Business (удалён)",
+			Description:  "Устаревший план, заменён на Premium",
+			LicenseType:  "per_user",
+			PricePerUnit: 800.00,
+			MinQuantity:  1,
+			ImageURL:     minioBaseURL + "legacy.jpg",
+			VideoURL:     minioBaseURL + "legacy.mp4",
+			Likes:        []int{11, 22},
+			Status:       "deleted",
+			CreatedAt:    now,
 		},
 	}
-
-	return &Repository{tariffs: tariffs}
+	return &Repository{licenses: licenses}, nil
 }
 
-// GetPublished возвращает все опубликованные тарифы (статус "published")
-func (r *Repository) GetPublished() []Tariff {
-	var result []Tariff
-	for _, t := range r.tariffs {
-		if t.Status == "published" {
-			result = append(result, t)
+// GetAllPublished
+func (r *Repository) GetAllPublished() ([]License, error) {
+	var res []License
+	for _, l := range r.licenses {
+		if l.Status == "published" {
+			res = append(res, l)
 		}
 	}
-	return result
+	if len(res) == 0 {
+		return nil, fmt.Errorf("опубликованных лицензий нет")
+	}
+	return res, nil
 }
 
-// GetDraft возвращает тариф в статусе "draft" (предполагается, что он один)
-func (r *Repository) GetDraft() (Tariff, error) {
-	for _, t := range r.tariffs {
-		if t.Status == "draft" {
-			return t, nil
+// FilterByPrice
+func (r *Repository) FilterByPrice(maxPrice float64) ([]License, error) {
+	pub, err := r.GetAllPublished()
+	if err != nil {
+		return nil, err
+	}
+	var res []License
+	for _, l := range pub {
+		if l.PricePerUnit <= maxPrice {
+			res = append(res, l)
 		}
 	}
-	return Tariff{}, fmt.Errorf("черновик не найден")
+	return res, nil
 }
 
-// GetByID возвращает тариф по ID (независимо от статуса, но для ленты нужен опубликованный)
-func (r *Repository) GetByID(id int) (Tariff, error) {
-	for _, t := range r.tariffs {
-		if t.ID == id {
-			return t, nil
+// GetByID
+func (r *Repository) GetByID(id int) (*License, error) {
+	for _, l := range r.licenses {
+		if l.ID == id && l.Status != "deleted" {
+			return &l, nil
 		}
 	}
-	return Tariff{}, fmt.Errorf("тариф с ID %d не найден", id)
+	return nil, fmt.Errorf("лицензия с ID %d не найдена", id)
 }
 
-// GetNext возвращает следующий опубликованный тариф после указанного ID (зацикливание)
-func (r *Repository) GetNext(id int) (Tariff, error) {
-	published := r.GetPublished()
-	for i, t := range published {
-		if t.ID == id {
-			if i+1 < len(published) {
-				return published[i+1], nil
-			}
-			// Если последний – возвращаем первый
-			return published[0], nil
+// GetNextPublished
+func (r *Repository) GetNextPublished(afterID int) (License, error) {
+	pub, _ := r.GetAllPublished()
+	for i, l := range pub {
+		if l.ID == afterID && i+1 < len(pub) {
+			return pub[i+1], nil
 		}
 	}
-	return Tariff{}, fmt.Errorf("тариф с ID %d не найден среди опубликованных", id)
+	return License{}, fmt.Errorf("следующей лицензии нет")
 }
 
-// FilterByPrice возвращает опубликованные тарифы с ценой >= minPrice
-func (r *Repository) FilterByPrice(minPrice int) []Tariff {
-	var result []Tariff
-	for _, t := range r.GetPublished() {
-		if t.Price >= minPrice {
-			result = append(result, t)
+// GetDraft
+func (r *Repository) GetDraft() (License, error) {
+	for _, l := range r.licenses {
+		if l.Status == "draft" {
+			return l, nil
 		}
 	}
-	return result
+	return License{}, fmt.Errorf("черновик не найден")
 }

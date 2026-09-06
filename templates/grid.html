@@ -2,44 +2,72 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Плитка тарифов</title>
-    <link rel="stylesheet" href="/static/css/grid.css">
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Плитка</title>
+    <link rel="stylesheet" href="/static/styles/grid.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="grid-container">
-        <h1>Тарифы</h1>
-        <form class="filters" action="/grid" method="GET">
-            <div class="field">
-                <label>Цена от (₽)</label>
-                <input type="number" name="min_price" placeholder="От 1000 ₽" value="{{ .minPrice }}">
-            </div>
-            <button type="submit" class="filter-btn">Найти</button>
-        </form>
-
-        <div class="tariffs-grid">
-            {{ range .tariffs }}
-            <a href="/feed?id={{ .ID }}" class="tariff-card">
-                <div class="card-image" style="background-image: url('{{ .ImageURL }}');"></div>
-                <div class="card-details">
-                    <h3>{{ .Title }}</h3>
-                    <div class="card-footer">
-                        <span class="price">{{ .Price }} ₽/мес</span>
-                        <span class="likes">❤️ {{ len .Likes }}</span>
+    <div class="app-container">
+        <main class="grid-page">
+            <div class="top-module">
+                <div class="page-title">Тарифы</div>
+                <div class="filter-row">
+                    <form action="/grid" method="GET" style="display:contents;">
+                        <div class="price-input">
+                            <input type="number" name="max_price" placeholder="Цена до 4 000 ₽" value="{{ .max_price }}">
+                            <a href="/grid" class="clear-icon">✕</a>
+                        </div>
+                        <button class="search-button" type="submit">Найти</button>
+                    </form>
+                </div>
+                <div class="cards-grid">
+                    <div class="col-left">
+                        {{ range .leftCol }}
+                        <div class="tariff-card">
+                            <a href="/feed/{{ .ID }}">
+                                <img src="{{ .ImageURL }}" alt="{{ .Title }}" class="card-image">
+                            </a>
+                            <div class="card-body">
+                                <div class="card-title">{{ .Title }}</div>
+                                <div class="card-footer">
+                                    <span class="card-price">₽ {{ .PricePerUnit }} / мес</span>
+                                    <span class="card-likes">❤️ {{ len .Likes }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {{ end }}
+                    </div>
+                    <div class="col-right">
+                        {{ range .rightCol }}
+                        <div class="tariff-card">
+                            <a href="/feed/{{ .ID }}">
+                                <img src="{{ .ImageURL }}" alt="{{ .Title }}" class="card-image">
+                            </a>
+                            <div class="card-body">
+                                <div class="card-title">{{ .Title }}</div>
+                                <div class="card-footer">
+                                    <span class="card-price">₽ {{ .PricePerUnit }} / мес</span>
+                                    <span class="card-likes">❤️ {{ len .Likes }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {{ end }}
                     </div>
                 </div>
-            </a>
-            {{ else }}
-            <p class="no-tariffs">Нет тарифов, соответствующих фильтру</p>
-            {{ end }}
-        </div>
+            </div>
+            <nav class="bottom-nav">
+                <a href="/feed/1" class="nav-item">
+                    <span class="label">Лента</span>
+                </a>
+                <a href="/add" class="nav-item">
+                    <span class="label">Добавление</span>
+                </a>
+                <a href="/grid" class="nav-item active">
+                    <span class="label">Плитка</span>
+                </a>
+            </nav>
+        </main>
     </div>
-
-    <nav class="bottom-nav">
-        <a href="/feed">Лента</a>
-        <a href="/add">Добавление</a>
-        <a href="/grid" class="active">Плитка</a>
-    </nav>
 </body>
 </html>

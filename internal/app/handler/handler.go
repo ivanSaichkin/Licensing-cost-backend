@@ -1,100 +1,113 @@
 package handler
 
 import (
-	"licensing-cost/internal/app/repository"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
 
+	"licensing-cost/internal/app/repository"
+
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 type Handler struct {
 	Repo *repository.Repository
 }
 
-func NewHandler(repo *repository.Repository) *Handler {
-	return &Handler{Repo: repo}
+func NewHandler(r *repository.Repository) *Handler {
+	return &Handler{Repo: r}
 }
 
-// FeedHandler — страница ленты (отображает один тариф)
-// Параметры: id (опционально), next=true (следующий)
-// Если id не указан – показывает первый опубликованный
-func (h *Handler) FeedHandler(c *gin.Context) {
-	idStr := c.Query("id")
-	next := c.Query("next") == "true"
-
-	var tariff repository.Tariff
+// GET /grid
+func (h *Handler) Grid(c *gin.Context) {
+	priceParam := c.Query("max_price")
+	var licenses []repository.License
 	var err error
 
-	if idStr != "" {
-		id, errConv := strconv.Atoi(idStr)
-		if errConv != nil {
-			c.String(http.StatusBadRequest, "Неверный ID")
-			return
-		}
-		if next {
-			tariff, err = h.Repo.GetNext(id)
-		} else {
-			tariff, err = h.Repo.GetByID(id)
-		}
+	if priceParam == "" {
+		licenses, err = h.Repo.GetAllPublished()
 	} else {
-		// Без id – первый опубликованный
-		published := h.Repo.GetPublished()
-		if len(published) > 0 {
-			tariff = published[0]
+		maxPrice, convErr := strconv.ParseFloat(priceParam, 64)
+		if convErr != nil {
+			logrus.Error("Неверный параметр max_price:", convErr)
+			licenses, err = h.Repo.GetAllPublished()
 		} else {
-			c.String(http.StatusNotFound, "Нет опубликованных тарифов")
-			return
+			licenses, err = h.Repo.FilterByPrice(maxPrice)
 		}
 	}
-
 	if err != nil {
-		log.Println("Ошибка получения тарифа:", err)
-		c.String(http.StatusNotFound, "Тариф не найден")
-		return
+		logrus.Error(err)
+		licenses = []repository.License{}
 	}
 
-	c.HTML(http.StatusOK, "feed.html", gin.H{
-		"tariff": tariff,
-		"time":   time.Now().Format("15:04:05"),
-	})
-}
-
-// AddHandler — страница добавления (показывает черновик)
-func (h *Handler) AddHandler(c *gin.Context) {
-	draft, err := h.Repo.GetDraft()
-	if err != nil {
-		// Если черновика нет, передаём пустой тариф (показываем пустую форму)
-		draft = repository.Tariff{}
-	}
-	c.HTML(http.StatusOK, "add.html", gin.H{
-		"draft": draft,
-	})
-}
-
-// GridHandler — страница плитки (список всех опубликованных тарифов с фильтром по цене)
-// Параметр: min_price (необязательный)
-func (h *Handler) GridHandler(c *gin.Context) {
-	minPriceStr := c.Query("min_price")
-	var tariffs []repository.Tariff
-
-	if minPriceStr != "" {
-		minPrice, err := strconv.Atoi(minPriceStr)
-		if err != nil {
-			// Если не число – игнорируем фильтр
-			tariffs = h.Repo.GetPublished()
+	var leftCol, rightCol []repository.License
+	for i, l := range licenses {
+		if i%2 == 0 {
+			leftCol = append(leftCol, l)
 		} else {
-			tariffs = h.Repo.FilterByPrice(minPrice)
+			rightCol = append(rightCol, l)
 		}
-	} else {
-		tariffs = h.Repo.GetPublished()
 	}
 
 	c.HTML(http.StatusOK, "grid.html", gin.H{
-		"tariffs":  tariffs,
-		"minPrice": minPriceStr,
-		"time":     time.Now().Format("15:04:05"),
+		"time":      time.Now().Format("15:04:05"),
+		"leftCol":   leftCol,
+		"rightCol":  rightCol,
+		"max_price": priceParam,
+	})
+}
+
+// GET /feed/:id
+// Параметр ?full=true – показать полное описание
+func (h *Handler) Feed(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		logrus.Error("Неверный ID:", err)
+		c.String(http.StatusBadRequest, "Неверный ID")
+		return
+	}
+
+	if c.Query("next") == "true" {
+		next, err := h.Repo.GetNextPublished(id)
+		if err == nil {
+			c.Redirect(http.StatusFound, "/feed/"+strconv.Itoa(next.ID))
+			return
+		}
+	}
+
+	license, err := h.Repo.GetByID(id)
+	if err != nil {
+		logrus.Error(err)
+		c.String(http.StatusNotFound, "Лицензия не найдена")
+		return
+	}
+
+	full := c.Query("full") == "true"
+	shortDesc := license.Description
+	if len(shortDesc) > 100 {
+		shortDesc = shortDesc[:100] + "..."
+	}
+
+	c.HTML(http.StatusOK, "feed.html", gin.H{
+		"license":   license,
+		"likeCount": len(license.Likes),
+		"shortDesc": shortDesc,
+		"fullDesc":  license.Description,
+		"showFull":  full,
+	})
+}
+
+// GET /add
+func (h *Handler) Add(c *gin.Context) {
+	draft, err := h.Repo.GetDraft()
+	if err != nil {
+		logrus.Error(err)
+		c.String(http.StatusNotFound, "Черновик не найден")
+		return
+	}
+	c.HTML(http.StatusOK, "add.html", gin.H{
+		"draft": draft,
 	})
 }

@@ -1,33 +1,38 @@
 package api
 
 import (
+	"log"
+	"net/http"
+
 	"licensing-cost/internal/app/handler"
 	"licensing-cost/internal/app/repository"
-	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 func StartServer() {
-	log.Println("Server start up")
+	log.Println("Starting server...")
 
-	repo := repository.NewRepository()
+	repo, err := repository.NewRepository()
+	if err != nil {
+		logrus.Fatal("Ошибка репозитория:", err)
+	}
 	h := handler.NewHandler(repo)
 
 	r := gin.Default()
-
-	// Подключаем шаблоны и статику
 	r.LoadHTMLGlob("templates/*")
 	r.Static("/static", "./resources")
 
-	// Маршруты (все GET, как требуется в первой лабе)
-	r.GET("/feed", h.FeedHandler)
-	r.GET("/add", h.AddHandler)
-	r.GET("/grid", h.GridHandler)
+	r.GET("/grid", h.Grid)
+	r.GET("/feed/:id", h.Feed)
+	r.GET("/add", h.Add)
 
-	// Запуск на :8080
-	if err := r.Run(); err != nil {
-		log.Fatal("Server failed to start:", err)
+	r.GET("/", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/grid")
+	})
+
+	if err := r.Run(":8080"); err != nil {
+		logrus.Fatal("Ошибка запуска сервера:", err)
 	}
-	log.Println("Server down")
 }

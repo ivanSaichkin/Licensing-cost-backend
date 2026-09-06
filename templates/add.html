@@ -2,60 +2,70 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Добавление тарифа</title>
-    <link rel="stylesheet" href="/static/css/add.css">
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Добавление</title>
+    <link rel="stylesheet" href="/static/styles/add.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="add-container">
-        <h1>Новый тариф</h1>
-        <form>
-            <div class="uploads-row">
-                <div class="upload-box">
-                    <span>+</span>
-                    <span>Изображение</span>
+    <div class="app-container">
+        <main class="add-page">
+            <div class="top-module">
+                <div class="page-title">Новый тариф</div>
+                <div class="upload-section">
+                    <div class="image-upload-area">
+                        <div class="icon-plus">+</div>
+                        <span>Изображение</span>
+                    </div>
+                    <div class="video-upload-area">
+                        <div class="icon-plus">+</div>
+                        <span>Видео</span>
+                    </div>
                 </div>
-                <div class="upload-box">
-                    <span>+</span>
-                    <span>Видео</span>
+                <div class="form-fields">
+                    <div class="field">
+                        <label>Название</label>
+                        <input type="text" value="{{ .draft.Title }}" disabled>
+                    </div>
+                    <div class="field">
+                        <label>Описание</label>
+                        <textarea disabled>{{ .draft.Description }}</textarea>
+                    </div>
+                    <div class="field">
+                        <label>Тип лицензии</label>
+                        <select disabled>
+                            <option {{if eq .draft.LicenseType "per_user"}}selected{{end}}>per_user</option>
+                            <option {{if eq .draft.LicenseType "per_core"}}selected{{end}}>per_core</option>
+                            <option {{if eq .draft.LicenseType "subscription"}}selected{{end}}>subscription</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Цена за единицу</label>
+                        <input type="text" value="₽ {{ .draft.PricePerUnit }}" disabled>
+                    </div>
+                    <div class="field">
+                        <label>Минимальное количество</label>
+                        <input type="text" value="{{ .draft.MinQuantity }}" disabled>
+                    </div>
                 </div>
             </div>
-
-            <div class="field">
-                <label>Название</label>
-                <input type="text" placeholder="Введите название тарифа..." value="{{ .draft.Title }}">
-            </div>
-            <div class="field">
-                <label>Описание</label>
-                <textarea placeholder="Укажите подробные характеристики...">{{ .draft.Description }}</textarea>
-            </div>
-            <div class="field">
-                <label>Цена (₽)</label>
-                <input type="number" placeholder="Например: 12400" value="{{ .draft.Price }}">
-            </div>
-            <div class="specs-row">
-                <div class="field">
-                    <label>vCPU</label>
-                    <input type="number" placeholder="8" value="{{ .draft.VCPU }}">
+            <div class="bottom-module">
+                <div class="submit-button">
+                    <button class="cta-action" disabled>Далее</button>
                 </div>
-                <div class="field">
-                    <label>RAM (ГБ)</label>
-                    <input type="number" placeholder="32" value="{{ .draft.RAM }}">
-                </div>
-                <div class="field">
-                    <label>Диск (ГБ)</label>
-                    <input type="number" placeholder="500" value="{{ .draft.Disk }}">
-                </div>
+                <nav class="bottom-nav">
+                    <a href="/feed/1" class="nav-item">
+                        <span class="label">Лента</span>
+                    </a>
+                    <a href="/add" class="nav-item active">
+                        <span class="label">Добавление</span>
+                    </a>
+                    <a href="/grid" class="nav-item">
+                        <span class="label">Плитка</span>
+                    </a>
+                </nav>
             </div>
-            <button type="button" class="submit-btn">Далее</button>
-        </form>
+        </main>
     </div>
-
-    <nav class="bottom-nav">
-        <a href="/feed">Лента</a>
-        <a href="/add" class="active">Добавление</a>
-        <a href="/grid">Плитка</a>
-    </nav>
 </body>
 </html>
