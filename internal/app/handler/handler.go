@@ -19,20 +19,20 @@ func NewHandler(r *repository.Repository) *Handler {
 	return &Handler{Repo: r}
 }
 
-func (h *Handler) Grid(c *gin.Context) {
+func (h *Handler) GridLicenses(c *gin.Context) {
 	priceParam := c.Query("max_price")
 	var licenses []repository.License
 	var err error
 
 	if priceParam == "" {
-		licenses, err = h.Repo.GetAllPublished()
+		licenses, err = h.Repo.GetAllPublishedLicenses()
 	} else {
 		maxPrice, convErr := strconv.ParseFloat(priceParam, 64)
 		if convErr != nil {
 			logrus.Error("Неверный параметр max_price:", convErr)
-			licenses, err = h.Repo.GetAllPublished()
+			licenses, err = h.Repo.GetAllPublishedLicenses()
 		} else {
-			licenses, err = h.Repo.FilterByPrice(maxPrice)
+			licenses, err = h.Repo.FilterLicensesByPrice(maxPrice)
 		}
 	}
 	if err != nil {
@@ -57,7 +57,7 @@ func (h *Handler) Grid(c *gin.Context) {
 	})
 }
 
-func (h *Handler) Feed(c *gin.Context) {
+func (h *Handler) FeedLicense(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -67,14 +67,14 @@ func (h *Handler) Feed(c *gin.Context) {
 	}
 
 	if c.Query("next") == "true" {
-		next, err := h.Repo.GetNextPublished(id)
+		next, err := h.Repo.GetNextPublishedLicense(id)
 		if err == nil {
 			c.Redirect(http.StatusFound, "/feed/"+strconv.Itoa(next.ID))
 			return
 		}
 	}
 
-	license, err := h.Repo.GetByID(id)
+	license, err := h.Repo.GetLicenseByID(id)
 	if err != nil {
 		logrus.Error(err)
 		c.String(http.StatusNotFound, "Лицензия не найдена")
@@ -96,7 +96,7 @@ func (h *Handler) Feed(c *gin.Context) {
 	})
 }
 
-func (h *Handler) Add(c *gin.Context) {
+func (h *Handler) AddLicense(c *gin.Context) {
 	draft, err := h.Repo.GetDraft()
 	if err != nil {
 		logrus.Error(err)

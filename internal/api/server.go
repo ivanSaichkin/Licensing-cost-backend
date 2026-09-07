@@ -24,9 +24,9 @@ func StartServer() {
 	r.LoadHTMLGlob("templates/*")
 	r.Static("/static", "./resources")
 
-	r.GET("/grid", h.Grid)
-	r.GET("/feed/:id", h.Feed)
-	r.GET("/add", h.Add)
+	r.GET("/grid", h.GridLicenses)
+	r.GET("/feed/:id", h.FeedLicense)
+	r.GET("/add", h.AddLicense)
 
 	r.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/grid")

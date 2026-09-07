@@ -124,8 +124,7 @@ func NewRepository() (*Repository, error) {
 	return &Repository{licenses: licenses}, nil
 }
 
-// GetAllPublished возвращает все опубликованные лицензии, отсортированные по ID
-func (r *Repository) GetAllPublished() ([]License, error) {
+func (r *Repository) GetAllPublishedLicenses() ([]License, error) {
 	var res []License
 	for _, l := range r.licenses {
 		if l.Status == "published" {
@@ -135,15 +134,14 @@ func (r *Repository) GetAllPublished() ([]License, error) {
 	if len(res) == 0 {
 		return nil, fmt.Errorf("опубликованных лицензий нет")
 	}
-	// Сортируем по ID возрастанию
 	sort.Slice(res, func(i, j int) bool {
 		return res[i].ID < res[j].ID
 	})
 	return res, nil
 }
 
-func (r *Repository) FilterByPrice(maxPrice float64) ([]License, error) {
-	pub, err := r.GetAllPublished()
+func (r *Repository) FilterLicensesByPrice(maxPrice float64) ([]License, error) {
+	pub, err := r.GetAllPublishedLicenses()
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +154,7 @@ func (r *Repository) FilterByPrice(maxPrice float64) ([]License, error) {
 	return res, nil
 }
 
-func (r *Repository) GetByID(id int) (License, error) {
+func (r *Repository) GetLicenseByID(id int) (License, error) {
 	for _, l := range r.licenses {
 		if l.ID == id && l.Status != "deleted" {
 			return l, nil
@@ -165,9 +163,8 @@ func (r *Repository) GetByID(id int) (License, error) {
 	return License{}, fmt.Errorf("лицензия с ID %d не найдена", id)
 }
 
-// GetNextPublished возвращает следующую опубликованную лицензию по порядку ID
-func (r *Repository) GetNextPublished(afterID int) (License, error) {
-	pub, err := r.GetAllPublished()
+func (r *Repository) GetNextPublishedLicense(afterID int) (License, error) {
+	pub, err := r.GetAllPublishedLicenses()
 	if err != nil {
 		return License{}, err
 	}
