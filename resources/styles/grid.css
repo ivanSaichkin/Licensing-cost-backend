@@ -15,7 +15,7 @@ body {
     width: 390px;
     height: 844px;
     max-height: 100vh;
-    background: #F3F5F9;
+    background: #dceef8;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -24,7 +24,7 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 10px 14px 0;
+    padding: 12px 16px 0;
     min-height: 0;
 }
 .top-module {
@@ -34,14 +34,14 @@ body {
 }
 .page-title {
     font-weight: 800;
-    font-size: 20px;
+    font-size: 22px;
     color: #242424;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 .filter-row {
     display: flex;
     gap: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 .price-input {
     flex: 1;
@@ -50,14 +50,14 @@ body {
     background: #fff;
     border: 1px solid #E0E4E9;
     border-radius: 6px;
-    padding: 0 8px;
-    height: 32px;
+    padding: 0 10px;
+    height: 36px;
 }
 .price-input input {
     border: none;
     outline: none;
     flex: 1;
-    font-size: 12px;
+    font-size: 13px;
     color: #242424;
     background: transparent;
 }
@@ -67,18 +67,18 @@ body {
 .clear-icon {
     color: #A1A1A1;
     text-decoration: none;
-    font-size: 12px;
-    padding: 2px;
+    font-size: 13px;
+    padding: 4px;
 }
 .search-button {
-    background: #0078D4;
+    background: #0072c6;
     border: none;
-    border-radius: 6px;
-    padding: 0 14px;
-    height: 32px;
+    border-radius: 8px;
+    padding: 0 16px;
+    height: 36px;
     color: #fff;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 13px;
     cursor: pointer;
 }
 .search-button:hover {
@@ -86,13 +86,13 @@ body {
 }
 .cards-grid {
     display: flex;
-    gap: 8px;
+    gap: 10px;
 }
 .col-left, .col-right {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
 }
 .tariff-card {
     background: #fff;
@@ -105,18 +105,18 @@ body {
 }
 .card-image {
     width: 100%;
-    height: 76px;
+    height: 90px;
     object-fit: cover;
 }
 .card-body {
-    padding: 8px;
+    padding: 10px;
 }
 .card-title {
     font-weight: 700;
-    font-size: 12px;
+    font-size: 13px;
     color: #242424;
-    margin-bottom: 4px;
-    line-height: 14px;
+    margin-bottom: 6px;
+    line-height: 16px;
 }
 .card-footer {
     display: flex;
@@ -125,26 +125,26 @@ body {
 }
 .card-price {
     font-weight: 700;
-    font-size: 11px;
-    color: #0078D4;
+    font-size: 12px;
+    color: #0072c6;
 }
 .card-likes {
     display: flex;
     align-items: center;
-    gap: 2px;
-    font-size: 10px;
+    gap: 3px;
+    font-size: 11px;
     color: #5C5C5C;
 }
+
 .bottom-nav {
     flex-shrink: 0;
-    height: 48px;
-    background: #fff;
+    height: 52px;
+    background: #FFFFFF;
     border-top: 1px solid #E0E4E9;
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding: 0 12px;
-    margin-top: 6px;
+    padding: 0 16px;
 }
 .nav-item {
     display: flex;
@@ -152,11 +152,17 @@ body {
     align-items: center;
     text-decoration: none;
     color: #5C5C5C;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 500;
+    line-height: 13px;
+    transition: color 0.2s;
+}
+.nav-item:hover {
+    color: #0072c6;
 }
 .nav-item.active {
-    color: #0078D4;
-    font-weight: 600;
+    color: #0072c6;
+    font-weight: 700;
     text-decoration: underline;
+    text-underline-offset: 4px;
 }

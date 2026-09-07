@@ -15,7 +15,7 @@ body {
     width: 390px;
     height: 844px;
     max-height: 100vh;
-    background: #F3F5F9;
+    background: #dceef8;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -62,7 +62,7 @@ body {
     cursor: pointer;
 }
 .upload-area:hover {
-    border-color: #0078D4;
+    border-color: #0072c6;
     background: #F0F7FF;
 }
 .upload-area .icon-plus {
@@ -71,7 +71,7 @@ body {
     color: #6B7280;
 }
 .upload-area:hover .icon-plus {
-    color: #0078D4;
+    color: #0072c6;
 }
 .upload-area input[type="file"] {
     display: none;
@@ -105,16 +105,17 @@ body {
     resize: vertical;
     min-height: 60px;
 }
-.bottom-module {
+
+.cta-wrapper {
     flex-shrink: 0;
     padding: 8px 0 12px;
 }
 .cta-action {
     width: 100%;
     padding: 12px;
-    background: #0078D4;
+    background: #0072c6;
     border: none;
-    border-radius: 10px;
+    border-radius: 8px;
     color: #fff;
     font-weight: 600;
     font-size: 16px;
@@ -124,15 +125,16 @@ body {
 .cta-action:hover {
     background: #005A9E;
 }
+
 .bottom-nav {
-    height: 48px;
-    background: #fff;
+    flex-shrink: 0;
+    height: 52px;
+    background: #FFFFFF;
     border-top: 1px solid #E0E4E9;
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding: 0 12px;
-    margin-top: 8px;
+    padding: 0 16px;
 }
 .nav-item {
     display: flex;
@@ -142,9 +144,15 @@ body {
     color: #5C5C5C;
     font-size: 11px;
     font-weight: 500;
+    line-height: 13px;
+    transition: color 0.2s;
+}
+.nav-item:hover {
+    color: #0072c6;
 }
 .nav-item.active {
-    color: #0078D4;
-    font-weight: 600;
+    color: #0072c6;
+    font-weight: 700;
     text-decoration: underline;
+    text-underline-offset: 4px;
 }

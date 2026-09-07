@@ -4,7 +4,7 @@
     box-sizing: border-box;
 }
 body {
-    background: #000;
+    background: #F3F5F9;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -80,7 +80,7 @@ body {
 .price {
     font-weight: 700;
     font-size: 16px;
-    color: #0078D4;
+    color: #0072c6;
 }
 .like-btn {
     display: flex;
@@ -112,10 +112,10 @@ body {
     margin-top: 6px;
 }
 .btn-next {
-    background: #0078D4;
+    background: #0072c6;
     color: #fff;
     border: none;
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 10px 0;
     width: 100%;
     text-align: center;
@@ -131,13 +131,13 @@ body {
 
 .bottom-nav {
     flex-shrink: 0;
-    height: 48px;
-    background: #fff;
+    height: 52px;
+    background: #FFFFFF;
     border-top: 1px solid #E0E4E9;
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding: 0 12px;
+    padding: 0 16px;
 }
 .nav-item {
     display: flex;
@@ -145,11 +145,17 @@ body {
     align-items: center;
     text-decoration: none;
     color: #5C5C5C;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 500;
+    line-height: 13px;
+    transition: color 0.2s;
+}
+.nav-item:hover {
+    color: #0072c6;
 }
 .nav-item.active {
-    color: #0078D4;
+    color: #0072c6;
     font-weight: 700;
     text-decoration: underline;
+    text-underline-offset: 4px;
 }
