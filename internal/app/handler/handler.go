@@ -49,7 +49,7 @@ func (h *Handler) GridLicenses(c *gin.Context) {
 		}
 	}
 
-	c.HTML(http.StatusOK, "grid.html", gin.H{
+	c.HTML(http.StatusOK, "licensesGrid.html", gin.H{
 		"time":      time.Now().Format("15:04:05"),
 		"leftCol":   leftCol,
 		"rightCol":  rightCol,
@@ -87,7 +87,7 @@ func (h *Handler) FeedLicense(c *gin.Context) {
 		shortDesc = shortDesc[:100] + "..."
 	}
 
-	c.HTML(http.StatusOK, "feed.html", gin.H{
+	c.HTML(http.StatusOK, "licensesFeed.html", gin.H{
 		"license":   license,
 		"likeCount": len(license.Likes),
 		"shortDesc": shortDesc,
@@ -103,7 +103,7 @@ func (h *Handler) AddLicense(c *gin.Context) {
 		c.String(http.StatusNotFound, "Черновик не найден")
 		return
 	}
-	c.HTML(http.StatusOK, "add.html", gin.H{
+	c.HTML(http.StatusOK, "addLicense.html", gin.H{
 		"draft": draft,
 	})
 }

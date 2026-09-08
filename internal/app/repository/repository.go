@@ -9,17 +9,17 @@ import (
 const minioBaseURL = "http://localhost:9000/licensing-images/"
 
 type License struct {
-	ID           int     `json:"id"`
-	Title        string  `json:"title"`
-	Description  string  `json:"description"`
-	LicenseType  string  `json:"license_type"`
-	PricePerUnit float64 `json:"price_per_unit"`
-	MinQuantity  int     `json:"min_quantity"`
-	ImageURL     string  `json:"image_url"`
-	VideoURL     string  `json:"video_url"`
-	Likes        []int   `json:"likes"`
-	Status       string  `json:"status"`
-	CreatedAt    string  `json:"created_at"`
+	ID           int
+	Title        string
+	Description  string
+	LicenseType  string
+	PricePerUnit float64
+	MinQuantity  int
+	ImageURL     string
+	VideoURL     string
+	Likes        []int
+	Status       string
+	CreatedAt    string
 }
 
 type Repository struct {
