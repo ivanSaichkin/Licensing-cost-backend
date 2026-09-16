@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Плитка</title>
+    <link rel="stylesheet" href="/static/styles/grid.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <main class="grid-page">
+            <div class="page-title">Модели лицензирования</div>
+
+            <form action="/licensings" method="GET" class="filter-form">
+                <div class="slider-row">
+                    <label>Макс. комиссия: <span id="slider-value">{{ if .max_commission }}{{ .max_commission }}{{ else }}600{{ end }}</span> ₽</label>
+                    <input type="range" name="max_commission" min="0" max="600" step="10"
+                           value="{{ if .max_commission }}{{ .max_commission }}{{ else }}600{{ end }}"
+                           oninput="document.getElementById('slider-value').textContent = this.value">
+                </div>
+                <button type="submit" class="search-button">Найти</button>
+            </form>
+
+            <div class="cards-grid">
+                <div class="col-left">
+                    {{ range .leftCol }}
+                    <div class="tariff-card">
+                        <a href="/licensing/{{ .ID }}">
+                            <img src="{{ .ImageURL }}" alt="{{ .Title }}" class="card-image">
+                        </a>
+                        <div class="card-body">
+                            <div class="card-title">{{ .Title }}</div>
+                            <div class="card-type">Модель: {{ .LicenseType }}</div>
+                            <div class="card-footer">
+                                <span class="card-price">₽ {{ .CommissionPerUnit }}</span>
+                                <span class="card-likes">❤️ {{ len .Likes }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {{ end }}
+                </div>
+                <div class="col-right">
+                    {{ range .rightCol }}
+                    <div class="tariff-card">
+                        <a href="/licensing/{{ .ID }}">
+                            <img src="{{ .ImageURL }}" alt="{{ .Title }}" class="card-image">
+                        </a>
+                        <div class="card-body">
+                            <div class="card-title">{{ .Title }}</div>
+                            <div class="card-type">Модель: {{ .LicenseType }}</div>
+                            <div class="card-footer">
+                                <span class="card-price">₽ {{ .CommissionPerUnit }}</span>
+                                <span class="card-likes">❤️ {{ len .Likes }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {{ end }}
+                </div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="/licensing/1" class="nav-item">
+                <span class="label">Лента</span>
+            </a>
+            <a href="/licensings/add" class="nav-item">
+                <span class="label">Добавление</span>
+            </a>
+            <a href="/licensings" class="nav-item active">
+                <span class="label">Плитка</span>
+            </a>
+        </nav>
+    </div>
+</body>
+</html>

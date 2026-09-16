@@ -4,7 +4,7 @@
     box-sizing: border-box;
 }
 body {
-    background: #F3F5F9;
+    background: #FFFFFF;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -15,7 +15,7 @@ body {
     width: 390px;
     height: 844px;
     max-height: 100vh;
-    background: #dceef8;
+    background: #FFFFFF;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -24,58 +24,94 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 12px 16px 0;
+    padding: 16px;
     min-height: 0;
-}
-.top-module {
-    flex: 1;
     overflow-y: auto;
-    padding-bottom: 4px;
+    gap: 12px;
 }
 .page-title {
     font-weight: 800;
     font-size: 22px;
     line-height: 26px;
     color: #242424;
-    margin-bottom: 12px;
+    margin-bottom: 4px;
 }
-.upload-section {
+
+/* Раскрывающийся список для выбора медиа */
+.media-picker {
+    border: 1px solid #E0E4E9;
+    border-radius: 12px;
+    background: #FFFFFF;
+    overflow: hidden;
+}
+.media-summary {
     display: flex;
-    gap: 12px;
-    margin-bottom: 14px;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    cursor: pointer;
+    list-style: none;
+    font-weight: 600;
+    font-size: 14px;
+    color: #242424;
 }
-.upload-area {
-    flex: 1;
-    height: 80px;
-    background: #fff;
-    border: 1.5px dashed #D1D5DB;
-    border-radius: 8px;
+.media-summary::-webkit-details-marker { display: none; }
+.media-summary::after {
+    content: "▾";
+    font-size: 12px;
+    color: #6B7280;
+    transition: transform 0.2s;
+}
+.media-picker[open] .media-summary::after {
+    transform: rotate(180deg);
+}
+.media-hint {
+    font-size: 12px;
+    color: #6B7280;
+    font-weight: 500;
+    margin-left: 6px;
+}
+
+/* Список превью */
+.media-list {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 4px;
-    font-weight: 600;
-    font-size: 13px;
-    color: #6B7280;
-    transition: border-color 0.2s, background 0.2s;
-    cursor: pointer;
+    gap: 8px;
+    padding: 8px 12px 12px;
+    border-top: 1px solid #F0F2F5;
 }
-.upload-area:hover {
+.media-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px;
+    border: 1px solid #E0E4E9;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+.media-option:hover {
     border-color: #0072c6;
     background: #F0F7FF;
 }
-.upload-area .icon-plus {
-    font-size: 24px;
-    font-weight: 300;
-    color: #6B7280;
+.media-option input[type="radio"] {
+    accent-color: #0072c6;
+    cursor: pointer;
 }
-.upload-area:hover .icon-plus {
-    color: #0072c6;
+.media-option img,
+.media-option video {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: #F3F5F9;
 }
-.upload-area input[type="file"] {
-    display: none;
+.media-option span {
+    font-size: 12px;
+    color: #5C5C5C;
 }
+
+/* Поля ввода */
 .form-fields {
     display: flex;
     flex-direction: column;
@@ -92,40 +128,25 @@ body {
     color: #242424;
 }
 .field input, .field textarea, .field select {
-    padding: 8px 10px;
+    padding: 10px 12px;
     border: 1px solid #E0E4E9;
-    border-radius: 6px;
+    border-radius: 12px;
     font-size: 14px;
-    background: #fff;
+    background: #FFFFFF;
     color: #242424;
     width: 100%;
     outline: none;
+    transition: border-color 0.2s;
+}
+.field input:focus, .field textarea:focus, .field select:focus {
+    border-color: #0072c6;
 }
 .field textarea {
     resize: vertical;
-    min-height: 60px;
+    min-height: 70px;
 }
 
-.cta-wrapper {
-    flex-shrink: 0;
-    padding: 8px 0 12px;
-}
-.cta-action {
-    width: 100%;
-    padding: 12px;
-    background: #0072c6;
-    border: none;
-    border-radius: 8px;
-    color: #fff;
-    font-weight: 600;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.cta-action:hover {
-    background: #005A9E;
-}
-
+/* Навигация */
 .bottom-nav {
     flex-shrink: 0;
     height: 52px;
@@ -147,9 +168,7 @@ body {
     line-height: 13px;
     transition: color 0.2s;
 }
-.nav-item:hover {
-    color: #0072c6;
-}
+.nav-item:hover { color: #0072c6; }
 .nav-item.active {
     color: #0072c6;
     font-weight: 700;

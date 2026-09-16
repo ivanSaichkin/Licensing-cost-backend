@@ -24,12 +24,13 @@ func StartServer() {
 	r.LoadHTMLGlob("templates/*")
 	r.Static("/static", "./resources")
 
-	r.GET("/grid", h.GridLicenses)
-	r.GET("/feed/:id", h.FeedLicense)
-	r.GET("/add", h.AddLicense)
+	// Переименованные маршруты
+	r.GET("/licensings", h.LicensingsGrid)
+	r.GET("/licensing/:id", h.LicensingFeed)
+	r.GET("/licensings/add", h.AddLicensing)
 
 	r.GET("/", func(c *gin.Context) {
-		c.Redirect(http.StatusMovedPermanently, "/grid")
+		c.Redirect(http.StatusMovedPermanently, "/licensings")
 	})
 
 	if err := r.Run(":8080"); err != nil {

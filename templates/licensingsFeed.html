@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Лента</title>
+    <link rel="stylesheet" href="/static/styles/feed.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <main class="feed-page">
+            <div class="video-wrapper">
+                <video src="{{ .licensing.VideoURL }}" autoplay muted loop playsinline></video>
+                <div class="overlay">
+                    <!-- Левая часть: заголовок и описание -->
+                    <div class="left-info">
+                        <h2>{{ .licensing.Title }}</h2>
+                        <div class="desc-wrapper">
+                            {{ if .showFull }}
+                                <p class="desc-full">{{ .fullDesc }}</p>
+                                <a href="/licensing/{{ .licensing.ID }}" class="more-link">Меньше</a>
+                            {{ else }}
+                                <p class="desc-short">{{ .shortDesc }}</p>
+                                <a href="/licensing/{{ .licensing.ID }}?full=true" class="more-link">Ещё</a>
+                            {{ end }}
+                        </div>
+                    </div>
+
+                    <!-- Правая часть: параметры, лайк, кнопка "Следующий" -->
+                    <div class="right-info">
+                        <div class="param-row">
+                            <span class="param-label">Комиссия:</span>
+                            <span class="param-value">₽ {{ .licensing.CommissionPerUnit }}</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-label">Мин. для расчёта:</span>
+                            <span class="param-value">{{ .licensing.MinForCalc }}</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-label">Тип:</span>
+                            <span class="param-value">{{ .licensing.LicenseType }}</span>
+                        </div>
+
+                        <!-- Лайк над кнопкой "Следующий" -->
+                        <a href="#" class="like-btn" onclick="return false;">
+                            <span class="heart">❤️</span>
+                            <span class="like-count">{{ .likeCount }}</span>
+                        </a>
+
+                        <a href="/licensing/{{ .licensing.ID }}?next=true" class="next-btn">→</a>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="/licensing/1" class="nav-item active">
+                <span class="label">Лента</span>
+            </a>
+            <a href="/licensings/add" class="nav-item">
+                <span class="label">Добавление</span>
+            </a>
+            <a href="/licensings" class="nav-item">
+                <span class="label">Плитка</span>
+            </a>
+        </nav>
+    </div>
+</body>
+</html>

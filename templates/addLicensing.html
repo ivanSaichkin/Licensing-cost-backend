@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Добавление</title>
+    <link rel="stylesheet" href="/static/styles/add.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <main class="add-page">
+            <div class="page-title">Новая модель лицензирования</div>
+
+            <!-- Выбор изображения: раскрывающийся список с превью -->
+            <details class="media-picker">
+                <summary class="media-summary">
+                    <span class="media-label">Изображение</span>
+                    <span class="media-hint">Выбрать ▾</span>
+                </summary>
+                <div class="media-list">
+                    <label class="media-option">
+                        <input type="radio" name="image" value="per_user.jpg">
+                        <img src="http://localhost:9000/licensing-images/per_user.jpg" alt="Per User">
+                        <span>per_user.jpg</span>
+                    </label>
+                    <label class="media-option">
+                        <input type="radio" name="image" value="per_core.jpg">
+                        <img src="http://localhost:9000/licensing-images/per_core.jpg" alt="Per Core">
+                        <span>per_core.jpg</span>
+                    </label>
+                    <label class="media-option">
+                        <input type="radio" name="image" value="subscription.jpg">
+                        <img src="http://localhost:9000/licensing-images/subscription.jpg" alt="Subscription">
+                        <span>subscription.jpg</span>
+                    </label>
+                    <label class="media-option">
+                        <input type="radio" name="image" value="enterprise.jpg">
+                        <img src="http://localhost:9000/licensing-images/enterprise.jpg" alt="Enterprise">
+                        <span>enterprise.jpg</span>
+                    </label>
+                </div>
+            </details>
+
+            <!-- Выбор видео: раскрывающийся список с превью -->
+            <details class="media-picker">
+                <summary class="media-summary">
+                    <span class="media-label">Видео</span>
+                    <span class="media-hint">Выбрать ▾</span>
+                </summary>
+                <div class="media-list">
+                    <label class="media-option video-option">
+                        <input type="radio" name="video" value="per_user.mp4">
+                        <video src="http://localhost:9000/licensing-images/per_user.mp4" muted></video>
+                        <span>per_user.mp4</span>
+                    </label>
+                    <label class="media-option video-option">
+                        <input type="radio" name="video" value="per_core.mp4">
+                        <video src="http://localhost:9000/licensing-images/per_core.mp4" muted></video>
+                        <span>per_core.mp4</span>
+                    </label>
+                    <label class="media-option video-option">
+                        <input type="radio" name="video" value="subscription.mp4">
+                        <video src="http://localhost:9000/licensing-images/subscription.mp4" muted></video>
+                        <span>subscription.mp4</span>
+                    </label>
+                    <label class="media-option video-option">
+                        <input type="radio" name="video" value="enterprise.mp4">
+                        <video src="http://localhost:9000/licensing-images/enterprise.mp4" muted></video>
+                        <span>enterprise.mp4</span>
+                    </label>
+                </div>
+            </details>
+
+            <!-- Поля, которые нужно вводить -->
+            <div class="form-fields">
+                <div class="field">
+                    <label>Название</label>
+                    <input type="text" value="{{ .draft.Title }}">
+                </div>
+                <div class="field">
+                    <label>Описание</label>
+                    <textarea>{{ .draft.Description }}</textarea>
+                </div>
+                <div class="field">
+                    <label>Тип лицензирования</label>
+                    <select>
+                        <option {{if eq .draft.LicenseType "per_user"}}selected{{end}}>per_user</option>
+                        <option {{if eq .draft.LicenseType "per_core"}}selected{{end}}>per_core</option>
+                        <option {{if eq .draft.LicenseType "subscription"}}selected{{end}}>subscription</option>
+                        <option {{if eq .draft.LicenseType "enterprise"}}selected{{end}}>enterprise</option>
+                        <option {{if eq .draft.LicenseType "concurrent"}}selected{{end}}>concurrent</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Комиссия за 1 ед.</label>
+                    <input type="text" value="₽ {{ .draft.CommissionPerUnit }}">
+                </div>
+                <div class="field">
+                    <label>Минимальное число для расчёта</label>
+                    <input type="text" value="{{ .draft.MinForCalc }}">
+                </div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="/licensing/1" class="nav-item">
+                <span class="label">Лента</span>
+            </a>
+            <a href="/licensings/add" class="nav-item active">
+                <span class="label">Добавление</span>
+            </a>
+            <a href="/licensings" class="nav-item">
+                <span class="label">Плитка</span>
+            </a>
+        </nav>
+    </div>
+</body>
+</html>
