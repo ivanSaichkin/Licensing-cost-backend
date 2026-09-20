@@ -136,10 +136,10 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
+    width: 150px;
     height: 38px;
     background: #0072c6;
-    border-radius: 50%;
+    border-radius: 10px;
     color: #fff;
     text-decoration: none;
     font-size: 18px;
