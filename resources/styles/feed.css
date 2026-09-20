@@ -69,12 +69,12 @@ body {
     line-height: 15px;
     opacity: 0.9;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
 .desc-full {
-    -webkit-line-clamp: unset;
+    line-clamp: unset;
 }
 .more-link {
     font-weight: 600;
