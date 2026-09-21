@@ -156,3 +156,21 @@ body {
     text-decoration: underline;
     text-underline-offset: 4px;
 }
+
+.delete-btn {
+    width: 100%;
+    padding: 6px;
+    margin-top: 8px;
+    background: #fff;
+    border: 1px solid #E0E4E9;
+    border-radius: 8px;
+    color: #d33;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.delete-btn:hover {
+    background: #ffe5e5;
+    border-color: #d33;
+}

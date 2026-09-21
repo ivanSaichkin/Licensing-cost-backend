@@ -11,9 +11,9 @@
     <div class="app-container">
         <main class="feed-page">
             <div class="video-wrapper">
-                <video src="{{ .licensing.VideoURL }}" autoplay muted loop playsinline></video>
+                <video src="{{ .videoURL }}" autoplay muted loop playsinline
+                       poster="{{ .imageURL }}"></video>
                 <div class="overlay">
-                    <!-- Левая часть: заголовок и описание -->
                     <div class="left-info">
                         <h2>{{ .licensing.Title }}</h2>
                         <div class="desc-wrapper">
@@ -26,8 +26,6 @@
                             {{ end }}
                         </div>
                     </div>
-
-                    <!-- Правая часть: параметры, лайк, кнопка "Следующий" -->
                     <div class="right-info">
                         <div class="param-row">
                             <span class="param-label">Комиссия:</span>
@@ -41,13 +39,10 @@
                             <span class="param-label">Тип:</span>
                             <span class="param-value">{{ .licensing.LicenseType }}</span>
                         </div>
-
-                        <!-- Лайк над кнопкой "Следующий" -->
                         <a href="#" class="like-btn" onclick="return false;">
                             <span class="heart">❤️</span>
                             <span class="like-count">{{ .likeCount }}</span>
                         </a>
-
                         <a href="/licensing/{{ .licensing.ID }}?next=true" class="next-btn">следующий→</a>
                     </div>
                 </div>

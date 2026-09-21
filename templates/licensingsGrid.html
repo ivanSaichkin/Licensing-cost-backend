@@ -34,8 +34,12 @@
                             <div class="card-type">Модель: {{ .LicenseType }}</div>
                             <div class="card-footer">
                                 <span class="card-price">₽ {{ .CommissionPerUnit }}</span>
-                                <span class="card-likes">❤️ {{ len .Likes }}</span>
+                                <span class="card-likes">❤️ {{ .LikesCount }}</span>
                             </div>
+                            <form action="/licensings/delete" method="POST">
+                                <input type="hidden" name="licensing_id" value="{{ .ID }}">
+                                <button type="submit" class="delete-btn">Удалить</button>
+                            </form>
                         </div>
                     </div>
                     {{ end }}
@@ -51,8 +55,12 @@
                             <div class="card-type">Модель: {{ .LicenseType }}</div>
                             <div class="card-footer">
                                 <span class="card-price">₽ {{ .CommissionPerUnit }}</span>
-                                <span class="card-likes">❤️ {{ len .Likes }}</span>
+                                <span class="card-likes">❤️ {{ .LikesCount }}</span>
                             </div>
+                            <form action="/licensings/delete" method="POST">
+                                <input type="hidden" name="licensing_id" value="{{ .ID }}">
+                                <button type="submit" class="delete-btn">Удалить</button>
+                            </form>
                         </div>
                     </div>
                     {{ end }}

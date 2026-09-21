@@ -1,4 +1,26 @@
+version: '3'
+
 services:
+  postgres:
+    image: postgres:latest
+    container_name: licensing_postgres
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: licensing_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+  adminer:
+    image: adminer:latest
+    container_name: licensing_adminer
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres
+
   minio:
     container_name: minio_storage
     image: minio/minio:latest
@@ -14,4 +36,5 @@ services:
     command: server /data --console-address ":9001"
 
 volumes:
+  postgres_data:
   minio-data:

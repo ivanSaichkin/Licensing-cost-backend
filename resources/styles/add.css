@@ -199,3 +199,20 @@ body {
     text-decoration: underline;
     text-underline-offset: 4px;
 }
+
+.cta-action {
+    width: 100%;
+    padding: 10px;
+    background: #0072c6;
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s;
+}
+.cta-action:hover { background: #005A9E; }
+.cta-publish { background: #1a9e3a; }
+.cta-publish:hover { background: #147a2c; }
