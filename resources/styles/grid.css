@@ -156,3 +156,9 @@ body {
     text-decoration: underline;
     text-underline-offset: 4px;
 }
+
+.card-min {
+    font-weight: 600;
+    font-size: 11px;
+    color: #5C5C5C;
+}
