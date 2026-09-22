@@ -27,14 +27,20 @@
                     {{ range .leftCol }}
                     <div class="tariff-card">
                         <a href="/licensing/{{ .ID }}">
-                            <img src="{{ .ImageURL }}" alt="{{ .Title }}" class="card-image">
+                            {{ if .ImageURL }}
+                                <img src="{{ .ImageURL }}" alt="{{ .Title }}" class="card-image">
+                            {{ else }}
+                                <img src="/static/img/default_image.png" alt="Нет изображения" class="card-image">
+                            {{ end }}
                         </a>
                         <div class="card-body">
-                            <div class="card-title">{{ .Title }}</div>
-                            <div class="card-type">Модель: {{ .LicenseType }}</div>
+                            <div class="card-title">{{ if .Title }}{{ .Title }}{{ else }}Без названия{{ end }}</div>
+                            <div class="card-type">Модель: {{ if .LicenseType }}{{ .LicenseType }}{{ else }}не указана{{ end }}</div>
                             <div class="card-footer">
                                 <span class="card-price">₽ {{ .CommissionPerUnit }}</span>
                                 <span class="card-min">Мин: {{ .MinForCalc }}</span>
+                            </div>
+                            <div class="card-likes-row">
                                 <span class="card-likes">❤️ {{ .LikesCount }}</span>
                             </div>
                             <form action="/licensings/delete" method="POST">
@@ -49,14 +55,20 @@
                     {{ range .rightCol }}
                     <div class="tariff-card">
                         <a href="/licensing/{{ .ID }}">
-                            <img src="{{ .ImageURL }}" alt="{{ .Title }}" class="card-image">
+                            {{ if .ImageURL }}
+                                <img src="{{ .ImageURL }}" alt="{{ .Title }}" class="card-image">
+                            {{ else }}
+                                <img src="/static/img/default_image.png" alt="Нет изображения" class="card-image">
+                            {{ end }}
                         </a>
                         <div class="card-body">
-                            <div class="card-title">{{ .Title }}</div>
-                            <div class="card-type">Модель: {{ .LicenseType }}</div>
+                            <div class="card-title">{{ if .Title }}{{ .Title }}{{ else }}Без названия{{ end }}</div>
+                            <div class="card-type">Модель: {{ if .LicenseType }}{{ .LicenseType }}{{ else }}не указана{{ end }}</div>
                             <div class="card-footer">
                                 <span class="card-price">₽ {{ .CommissionPerUnit }}</span>
                                 <span class="card-min">Мин: {{ .MinForCalc }}</span>
+                            </div>
+                            <div class="card-likes-row">
                                 <span class="card-likes">❤️ {{ .LikesCount }}</span>
                             </div>
                             <form action="/licensings/delete" method="POST">

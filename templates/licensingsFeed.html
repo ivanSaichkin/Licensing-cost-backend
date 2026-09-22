@@ -11,21 +11,28 @@
     <div class="app-container">
         <main class="feed-page">
             <div class="video-wrapper">
-                <video src="{{ .videoURL }}" autoplay muted loop playsinline
-                       poster="{{ .imageURL }}"></video>
+                {{ if .licensing.VideoURL }}
+                    <video src="{{ .licensing.VideoURL }}" autoplay muted loop playsinline
+                           poster="{{ if .licensing.ImageURL }}{{ .licensing.ImageURL }}{{ else }}/static/img/default_image.png{{ end }}"></video>
+                {{ else }}
+                    <video src="/static/img/default_video.mp4" autoplay muted loop playsinline
+                           poster="/static/img/default_image.png"></video>
+                {{ end }}
+
                 <div class="overlay">
                     <div class="left-info">
-                        <h2>{{ .licensing.Title }}</h2>
+                        <h2>{{ if .licensing.Title }}{{ .licensing.Title }}{{ else }}Без названия{{ end }}</h2>
                         <div class="desc-wrapper">
                             {{ if .showFull }}
-                                <p class="desc-full">{{ .fullDesc }}</p>
+                                <p class="desc-full">{{ if .fullDesc }}{{ .fullDesc }}{{ else }}Описание отсутствует{{ end }}</p>
                                 <a href="/licensing/{{ .licensing.ID }}" class="more-link">Меньше</a>
                             {{ else }}
-                                <p class="desc-short">{{ .shortDesc }}</p>
+                                <p class="desc-short">{{ if .shortDesc }}{{ .shortDesc }}{{ else }}Описание отсутствует{{ end }}</p>
                                 <a href="/licensing/{{ .licensing.ID }}?full=true" class="more-link">Ещё</a>
                             {{ end }}
                         </div>
                     </div>
+
                     <div class="right-info">
                         <div class="param-row">
                             <span class="param-label">Комиссия:</span>
@@ -37,12 +44,14 @@
                         </div>
                         <div class="param-row">
                             <span class="param-label">Тип:</span>
-                            <span class="param-value">{{ .licensing.LicenseType }}</span>
+                            <span class="param-value">{{ if .licensing.LicenseType }}{{ .licensing.LicenseType }}{{ else }}не указан{{ end }}</span>
                         </div>
+
                         <a href="#" class="like-btn" onclick="return false;">
                             <span class="heart">❤️</span>
                             <span class="like-count">{{ .likeCount }}</span>
                         </a>
+
                         <a href="/licensing/{{ .licensing.ID }}?next=true" class="next-btn">следующий→</a>
                     </div>
                 </div>
