@@ -174,3 +174,9 @@ body {
     background: #ffe5e5;
     border-color: #d33;
 }
+
+.card-min {
+    font-weight: 600;
+    font-size: 11px;
+    color: #5C5C5C;
+}
