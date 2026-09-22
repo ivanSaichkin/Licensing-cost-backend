@@ -15,7 +15,6 @@ type LicensingModel struct {
 	CreatorID         uint       `gorm:"not null" json:"creator_id"`
 	CreatedAt         time.Time  `gorm:"not null" json:"created_at"`
 	PublishedAt       *time.Time `json:"published_at"`
-	IsDeleted         bool       `gorm:"type:boolean;not null;default:false" json:"is_deleted"`
 
 	// связи
 	Creator User   `gorm:"foreignKey:CreatorID"`

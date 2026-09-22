@@ -10,11 +10,11 @@ import (
 	"gorm.io/gorm"
 )
 
-// GetAllPublishedLicensings — все опубликованные, отсортированные по ID
+// GetAllPublishedLicensings — все опубликованные, не удалённые
 func (r *Repository) GetAllPublishedLicensings() ([]ds.LicensingModel, error) {
 	var licensings []ds.LicensingModel
 	err := r.db.
-		Where("status = ? AND is_deleted = ?", "published", false).
+		Where("status = ?", "published").
 		Order("id ASC").
 		Find(&licensings).Error
 	if err != nil {
@@ -30,8 +30,7 @@ func (r *Repository) GetAllPublishedLicensings() ([]ds.LicensingModel, error) {
 func (r *Repository) FilterLicensingsByCommission(maxCommission float64) ([]ds.LicensingModel, error) {
 	var licensings []ds.LicensingModel
 	err := r.db.
-		Where("status = ? AND is_deleted = ? AND commission_per_unit <= ?",
-			"published", false, maxCommission).
+		Where("status = ? AND commission_per_unit <= ?", "published", maxCommission).
 		Order("id ASC").
 		Find(&licensings).Error
 	if err != nil {
@@ -40,11 +39,11 @@ func (r *Repository) FilterLicensingsByCommission(maxCommission float64) ([]ds.L
 	return licensings, nil
 }
 
-// GetLicensingByID — одна модель (не удалённая)
+// GetLicensingByID — одна модель, не удалённая
 func (r *Repository) GetLicensingByID(id int) (*ds.LicensingModel, error) {
 	var licensing ds.LicensingModel
 	err := r.db.
-		Where("id = ? AND is_deleted = ?", id, false).
+		Where("id = ? AND status != ?", id, "deleted").
 		First(&licensing).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -55,11 +54,11 @@ func (r *Repository) GetLicensingByID(id int) (*ds.LicensingModel, error) {
 	return &licensing, nil
 }
 
-// GetNextPublishedLicensing — следующая по ID
+// GetNextPublishedLicensing — следующая по ID, только published
 func (r *Repository) GetNextPublishedLicensing(afterID int) (*ds.LicensingModel, error) {
 	var licensing ds.LicensingModel
 	err := r.db.
-		Where("id > ? AND status = ? AND is_deleted = ?", afterID, "published", false).
+		Where("id > ? AND status = ?", afterID, "published").
 		Order("id ASC").
 		First(&licensing).Error
 	if err != nil {
@@ -71,11 +70,11 @@ func (r *Repository) GetNextPublishedLicensing(afterID int) (*ds.LicensingModel,
 	return &licensing, nil
 }
 
-// GetDraft — черновик текущего пользователя (пока creatorID=1)
+// GetDraft — черновик текущего пользователя
 func (r *Repository) GetDraft() (*ds.LicensingModel, error) {
 	var licensing ds.LicensingModel
 	err := r.db.
-		Where("creator_id = ? AND status = ? AND is_deleted = ?", 1, "draft", false).
+		Where("creator_id = ? AND status = ?", 1, "draft").
 		First(&licensing).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -86,7 +85,7 @@ func (r *Repository) GetDraft() (*ds.LicensingModel, error) {
 	return &licensing, nil
 }
 
-// CreateDraft — POST создания через ORM
+// CreateDraft — создание через ORM
 func (r *Repository) CreateDraft(title, description, licenseType, imageURL, videoURL string, commission float64, minForCalc int) (*ds.LicensingModel, error) {
 	licensing := &ds.LicensingModel{
 		Title:             title,
@@ -100,31 +99,29 @@ func (r *Repository) CreateDraft(title, description, licenseType, imageURL, vide
 		CreatorID:         1,
 		CreatedAt:         time.Now(),
 	}
-	err := r.db.Create(licensing).Error
-	if err != nil {
+	if err := r.db.Create(licensing).Error; err != nil {
 		return nil, err
 	}
 	return licensing, nil
 }
 
-// PublishLicensing — POST публикации через ORM
+// PublishLicensing — публикация через ORM
 func (r *Repository) PublishLicensing(id uint) error {
-	now := time.Now()
 	return r.db.Model(&ds.LicensingModel{}).
 		Where("id = ? AND status = ?", id, "draft").
 		Updates(map[string]interface{}{
 			"status":       "published",
-			"published_at": now,
+			"published_at": time.Now(),
 		}).Error
 }
 
-// DeleteLicensing — DELETE через SQL UPDATE (без ORM)
+// DeleteLicensing — удаление через SQL UPDATE (без ORM): статус → deleted
 func (r *Repository) DeleteLicensing(id uint) error {
-	query := "UPDATE licensing_models SET is_deleted = true WHERE id = $1"
+	query := "UPDATE licensing_models SET status = 'deleted' WHERE id = $1"
 	return r.db.Exec(query, id).Error
 }
 
-// GetLikesCount — количество лайков для модели
+// GetLikesCount — количество лайков
 func (r *Repository) GetLikesCount(licensingID uint) int64 {
 	var count int64
 	r.db.Model(&ds.Like{}).Where("licensing_id = ?", licensingID).Count(&count)
