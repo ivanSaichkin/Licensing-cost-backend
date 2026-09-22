@@ -39,10 +39,21 @@ func (h *Handler) LicensingsGrid(ctx *gin.Context) {
 	type Card struct {
 		ds.LicensingModel
 		LikesCount int64
+		ImageURL   string
 	}
+
 	var leftCol, rightCol []Card
 	for i, l := range licensings {
-		c := Card{LicensingModel: l, LikesCount: h.Repository.GetLikesCount(l.ID)}
+		imageURL := l.ImageURL
+		if imageURL == "" {
+			imageURL = "/static/img/default_image.png"
+		}
+
+		c := Card{
+			LicensingModel: l,
+			LikesCount:     h.Repository.GetLikesCount(l.ID),
+			ImageURL:       imageURL,
+		}
 		if i%2 == 0 {
 			leftCol = append(leftCol, c)
 		} else {
