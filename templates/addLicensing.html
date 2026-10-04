@@ -13,87 +13,108 @@
             <div class="page-title">Новая модель лицензирования</div>
 
             <form action="/licensings" method="POST" id="add-form">
-                <!-- Изображение -->
-                <details class="media-picker">
-                    <summary class="media-summary">
-                        <img src="{{ .imageURL }}" alt="" class="summary-preview"
-                             onerror="this.src='/static/img/default_image.png'">
-                        <div class="summary-row">
-                            <span class="media-label">Изображение</span>
-                            <span class="media-hint">Выбрать ▾</span>
+                {{ if eq .draft.Status "draft" }}
+                    <!-- ЧЕРНОВИК СОЗДАН: только превью, без выбора -->
+                    <div class="media-picker media-picker-static">
+                        <div class="media-summary">
+                            <img src="{{ .imageURL }}" alt="" class="summary-preview"
+                                 onerror="this.src='/static/img/default_image.png'">
+                            <div class="summary-row">
+                                <span class="media-label">Изображение</span>
+                            </div>
                         </div>
-                    </summary>
-                    <div class="media-list">
-                        <label class="media-option">
-                            <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/per_user.jpg">
-                            <img src="http://localhost:9000/licensing-images/per_user.jpg" alt=""
-                                 onerror="this.src='/static/img/default_image.png'">
-                            <span>per_user.jpg</span>
-                        </label>
-                        <label class="media-option">
-                            <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/per_core.jpg">
-                            <img src="http://localhost:9000/licensing-images/per_core.jpg" alt=""
-                                 onerror="this.src='/static/img/default_image.png'">
-                            <span>per_core.jpg</span>
-                        </label>
-                        <label class="media-option">
-                            <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/subscription.jpg">
-                            <img src="http://localhost:9000/licensing-images/subscription.jpg" alt=""
-                                 onerror="this.src='/static/img/default_image.png'">
-                            <span>subscription.jpg</span>
-                        </label>
-                        <label class="media-option">
-                            <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/enterprise.jpg">
-                            <img src="http://localhost:9000/licensing-images/enterprise.jpg" alt=""
-                                 onerror="this.src='/static/img/default_image.png'">
-                            <span>enterprise.jpg</span>
-                        </label>
-                        <label class="media-option">
-                            <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/concurrent.jpg">
-                            <img src="http://localhost:9000/licensing-images/concurrent.jpg" alt=""
-                                 onerror="this.src='/static/img/default_image.png'">
-                            <span>concurrent.jpg</span>
-                        </label>
                     </div>
-                </details>
 
-                <!-- Видео -->
-                <details class="media-picker">
-                    <summary class="media-summary">
-                        <video src="{{ .videoURL }}" muted class="summary-preview"></video>
-                        <div class="summary-row">
-                            <span class="media-label">Видео</span>
-                            <span class="media-hint">Выбрать ▾</span>
+                    <div class="media-picker media-picker-static">
+                        <div class="media-summary">
+                            <video src="{{ .videoURL }}" muted class="summary-preview"></video>
+                            <div class="summary-row">
+                                <span class="media-label">Видео</span>
+                            </div>
                         </div>
-                    </summary>
-                    <div class="media-list">
-                        <label class="media-option">
-                            <input type="radio" name="video_url" value="http://localhost:9000/licensing-images/per_user.mp4">
-                            <video src="http://localhost:9000/licensing-images/per_user.mp4" muted></video>
-                            <span>per_user.mp4</span>
-                        </label>
-                        <label class="media-option">
-                            <input type="radio" name="video_url" value="http://localhost:9000/licensing-images/per_core.mp4">
-                            <video src="http://localhost:9000/licensing-images/per_core.mp4" muted></video>
-                            <span>per_core.mp4</span>
-                        </label>
-                        <label class="media-option">
-                            <input type="radio" name="video_url" value="http://localhost:9000/licensing-images/subscription.mp4">
-                            <video src="http://localhost:9000/licensing-images/subscription.mp4" muted></video>
-                            <span>subscription.mp4</span>
-                        </label>
-                        <label class="media-option">
-                            <input type="radio" name="video_url" value="http://localhost:9000/licensing-images/enterprise.mp4">
-                            <video src="http://localhost:9000/licensing-images/enterprise.mp4" muted></video>
-                            <span>enterprise.mp4</span>
-                        </label>
-                        <label class="media-option">
-                            <input type="radio" name="video_url" value="http://localhost:9000/licensing-images/concurrent.mp4">
-                            <video src="http://localhost:9000/licensing-images/concurrent.mp4" muted></video>
-                            <span>concurrent.mp4</span>
-                        </label>
                     </div>
-                </details>
+                {{ else }}
+                    <!-- НОВЫЙ ЧЕРНОВИК: можно выбирать -->
+                    <details class="media-picker">
+                        <summary class="media-summary">
+                            <img src="{{ .imageURL }}" alt="" class="summary-preview"
+                                 onerror="this.src='/static/img/default_image.png'">
+                            <div class="summary-row">
+                                <span class="media-label">Изображение</span>
+                                <span class="media-hint">Выбрать ▾</span>
+                            </div>
+                        </summary>
+                        <div class="media-list">
+                            <label class="media-option">
+                                <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/per_user.jpg">
+                                <img src="http://localhost:9000/licensing-images/per_user.jpg" alt=""
+                                     onerror="this.src='/static/img/default_image.png'">
+                                <span>per_user.jpg</span>
+                            </label>
+                            <label class="media-option">
+                                <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/per_core.jpg">
+                                <img src="http://localhost:9000/licensing-images/per_core.jpg" alt=""
+                                     onerror="this.src='/static/img/default_image.png'">
+                                <span>per_core.jpg</span>
+                            </label>
+                            <label class="media-option">
+                                <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/subscription.jpg">
+                                <img src="http://localhost:9000/licensing-images/subscription.jpg" alt=""
+                                     onerror="this.src='/static/img/default_image.png'">
+                                <span>subscription.jpg</span>
+                            </label>
+                            <label class="media-option">
+                                <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/enterprise.jpg">
+                                <img src="http://localhost:9000/licensing-images/enterprise.jpg" alt=""
+                                     onerror="this.src='/static/img/default_image.png'">
+                                <span>enterprise.jpg</span>
+                            </label>
+                            <label class="media-option">
+                                <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/concurrent.jpg">
+                                <img src="http://localhost:9000/licensing-images/concurrent.jpg" alt=""
+                                     onerror="this.src='/static/img/default_image.png'">
+                                <span>concurrent.jpg</span>
+                            </label>
+                        </div>
+                    </details>
+
+                    <details class="media-picker">
+                        <summary class="media-summary">
+                            <video src="{{ .videoURL }}" muted class="summary-preview"></video>
+                            <div class="summary-row">
+                                <span class="media-label">Видео</span>
+                                <span class="media-hint">Выбрать ▾</span>
+                            </div>
+                        </summary>
+                        <div class="media-list">
+                            <label class="media-option">
+                                <input type="radio" name="video_url" value="http://localhost:9000/licensing-images/per_user.mp4">
+                                <video src="http://localhost:9000/licensing-images/per_user.mp4" muted></video>
+                                <span>per_user.mp4</span>
+                            </label>
+                            <label class="media-option">
+                                <input type="radio" name="video_url" value="http://localhost:9000/licensing-images/per_core.mp4">
+                                <video src="http://localhost:9000/licensing-images/per_core.mp4" muted></video>
+                                <span>per_core.mp4</span>
+                            </label>
+                            <label class="media-option">
+                                <input type="radio" name="video_url" value="http://localhost:9000/licensing-images/subscription.mp4">
+                                <video src="http://localhost:9000/licensing-images/subscription.mp4" muted></video>
+                                <span>subscription.mp4</span>
+                            </label>
+                            <label class="media-option">
+                                <input type="radio" name="video_url" value="http://localhost:9000/licensing-images/enterprise.mp4">
+                                <video src="http://localhost:9000/licensing-images/enterprise.mp4" muted></video>
+                                <span>enterprise.mp4</span>
+                            </label>
+                            <label class="media-option">
+                                <input type="radio" name="video_url" value="http://localhost:9000/licensing-images/concurrent.mp4">
+                                <video src="http://localhost:9000/licensing-images/concurrent.mp4" muted></video>
+                                <span>concurrent.mp4</span>
+                            </label>
+                        </div>
+                    </details>
+                {{ end }}
 
                 <!-- Поля формы -->
                 <div class="form-fields">
@@ -120,14 +141,14 @@
             </form>
 
             {{ if eq .draft.Status "draft" }}
-            <!-- Черновик уже создан → показываем "Опубликовать" -->
-            <form action="/licensings/publish" method="POST">
-                <input type="hidden" name="licensing_id" value="{{ .draft.ID }}">
-                <button type="submit" class="cta-action">Опубликовать</button>
-            </form>
+                <!-- Черновик уже создан → показываем "Опубликовать" -->
+                <form action="/licensings/publish" method="POST">
+                    <input type="hidden" name="licensing_id" value="{{ .draft.ID }}">
+                    <button type="submit" class="cta-action">Опубликовать</button>
+                </form>
             {{ else }}
-            <!-- Новый черновик → показываем "Далее" -->
-            <button type="submit" form="add-form" class="cta-action">Далее</button>
+                <!-- Новый черновик → показываем "Далее" -->
+                <button type="submit" form="add-form" class="cta-action">Далее</button>
             {{ end }}
         </main>
 

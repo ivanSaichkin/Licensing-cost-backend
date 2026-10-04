@@ -113,6 +113,19 @@ body {
     transform: rotate(180deg);
 }
 
+/* Статичный блок (когда черновик уже создан) */
+.media-picker-static {
+    cursor: default;
+}
+
+.media-picker-static .media-summary {
+    cursor: default;
+}
+
+.media-picker-static .summary-row {
+    background: #F9FAFB;
+}
+
 /* Список вариантов */
 .media-list {
     display: flex;
