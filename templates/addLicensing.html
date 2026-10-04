@@ -16,34 +16,42 @@
                 <!-- Изображение -->
                 <details class="media-picker">
                     <summary class="media-summary">
-                        <img src="{{ .imageURL }}" alt="" class="summary-thumb">
-                        <span class="media-label">Изображение</span>
-                        <span class="media-hint">Выбрать ▾</span>
+                        <img src="{{ .imageURL }}" alt="" class="summary-preview"
+                             onerror="this.src='/static/img/default_image.png'">
+                        <div class="summary-row">
+                            <span class="media-label">Изображение</span>
+                            <span class="media-hint">Выбрать ▾</span>
+                        </div>
                     </summary>
                     <div class="media-list">
                         <label class="media-option">
                             <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/per_user.jpg">
-                            <img src="http://localhost:9000/licensing-images/per_user.jpg" alt="" onerror="this.src='/static/img/default_image.png'">
+                            <img src="http://localhost:9000/licensing-images/per_user.jpg" alt=""
+                                 onerror="this.src='/static/img/default_image.png'">
                             <span>per_user.jpg</span>
                         </label>
                         <label class="media-option">
                             <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/per_core.jpg">
-                            <img src="http://localhost:9000/licensing-images/per_core.jpg" alt="" onerror="this.src='/static/img/default_image.png'">
+                            <img src="http://localhost:9000/licensing-images/per_core.jpg" alt=""
+                                 onerror="this.src='/static/img/default_image.png'">
                             <span>per_core.jpg</span>
                         </label>
                         <label class="media-option">
                             <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/subscription.jpg">
-                            <img src="http://localhost:9000/licensing-images/subscription.jpg" alt="" onerror="this.src='/static/img/default_image.png'">
+                            <img src="http://localhost:9000/licensing-images/subscription.jpg" alt=""
+                                 onerror="this.src='/static/img/default_image.png'">
                             <span>subscription.jpg</span>
                         </label>
                         <label class="media-option">
                             <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/enterprise.jpg">
-                            <img src="http://localhost:9000/licensing-images/enterprise.jpg" alt="" onerror="this.src='/static/img/default_image.png'">
+                            <img src="http://localhost:9000/licensing-images/enterprise.jpg" alt=""
+                                 onerror="this.src='/static/img/default_image.png'">
                             <span>enterprise.jpg</span>
                         </label>
                         <label class="media-option">
                             <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/concurrent.jpg">
-                            <img src="http://localhost:9000/licensing-images/concurrent.jpg" alt="" onerror="this.src='/static/img/default_image.png'">
+                            <img src="http://localhost:9000/licensing-images/concurrent.jpg" alt=""
+                                 onerror="this.src='/static/img/default_image.png'">
                             <span>concurrent.jpg</span>
                         </label>
                     </div>
@@ -52,9 +60,11 @@
                 <!-- Видео -->
                 <details class="media-picker">
                     <summary class="media-summary">
-                        <video src="{{ .videoURL }}" muted class="summary-thumb"></video>
-                        <span class="media-label">Видео</span>
-                        <span class="media-hint">Выбрать ▾</span>
+                        <video src="{{ .videoURL }}" muted class="summary-preview"></video>
+                        <div class="summary-row">
+                            <span class="media-label">Видео</span>
+                            <span class="media-hint">Выбрать ▾</span>
+                        </div>
                     </summary>
                     <div class="media-list">
                         <label class="media-option">
@@ -85,6 +95,7 @@
                     </div>
                 </details>
 
+                <!-- Поля формы -->
                 <div class="form-fields">
                     <div class="field">
                         <label>Название</label>

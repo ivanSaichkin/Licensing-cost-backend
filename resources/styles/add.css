@@ -50,35 +50,42 @@ body {
     overflow: hidden;
 }
 
+/* Верхний блок: большое превью + строка с подписью */
 .media-summary {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
+    flex-direction: column;
     cursor: pointer;
     list-style: none;
     font-weight: 600;
     font-size: 13px;
     color: #242424;
-    transition: border-color 0.2s;
 }
 
 .media-summary::-webkit-details-marker {
     display: none;
 }
 
-.media-summary:hover {
-    background: #F9FAFB;
+/* Большое превью на всю ширину поля */
+.summary-preview {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    background: #F3F5F9;
+    display: block;
 }
 
-/* Превью выбранного файла в поле */
-.summary-thumb {
-    width: 36px;
-    height: 36px;
-    object-fit: cover;
-    border-radius: 6px;
-    background: #F3F5F9;
-    flex-shrink: 0;
+/* Строка снизу: «Изображение / Выбрать ▾» */
+.summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-top: 1px solid #F0F2F5;
+    transition: background 0.2s;
+}
+
+.media-summary:hover .summary-row {
+    background: #F9FAFB;
 }
 
 .media-label {
