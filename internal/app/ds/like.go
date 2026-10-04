@@ -5,6 +5,6 @@ type Like struct {
 	UserID      uint `gorm:"not null;uniqueIndex:idx_user_licensing"`
 	LicensingID uint `gorm:"not null;uniqueIndex:idx_user_licensing"`
 
-	User      User           `gorm:"foreignKey:UserID"`
-	Licensing LicensingModel `gorm:"foreignKey:LicensingID"`
+	User      User      `gorm:"foreignKey:UserID"`
+	Licensing Licensing `gorm:"foreignKey:LicensingID"`
 }

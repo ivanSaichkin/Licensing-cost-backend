@@ -35,7 +35,6 @@
                         </a>
                         <div class="card-body">
                             <div class="card-title">{{ if .Title }}{{ .Title }}{{ else }}Без названия{{ end }}</div>
-                            <div class="card-type">Модель: {{ if .LicenseType }}{{ .LicenseType }}{{ else }}не указана{{ end }}</div>
                             <div class="card-footer">
                                 <span class="card-price">₽ {{ .CommissionPerUnit }}</span>
                                 <span class="card-min">Мин: {{ .MinForCalc }}</span>
@@ -63,7 +62,6 @@
                         </a>
                         <div class="card-body">
                             <div class="card-title">{{ if .Title }}{{ .Title }}{{ else }}Без названия{{ end }}</div>
-                            <div class="card-type">Модель: {{ if .LicenseType }}{{ .LicenseType }}{{ else }}не указана{{ end }}</div>
                             <div class="card-footer">
                                 <span class="card-price">₽ {{ .CommissionPerUnit }}</span>
                                 <span class="card-min">Мин: {{ .MinForCalc }}</span>

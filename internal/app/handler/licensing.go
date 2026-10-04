@@ -14,10 +14,9 @@ import (
 const defaultImage = "/static/img/default_image.png"
 const defaultVideo = "/static/img/default_video.mp4"
 
-// GET /licensings
 func (h *Handler) LicensingsGrid(ctx *gin.Context) {
 	commissionParam := ctx.Query("max_commission")
-	var licensings []ds.LicensingModel
+	var licensings []ds.Licensing
 	var err error
 
 	if commissionParam == "" {
@@ -32,12 +31,11 @@ func (h *Handler) LicensingsGrid(ctx *gin.Context) {
 	}
 	if err != nil {
 		logrus.Error(err)
-		licensings = []ds.LicensingModel{}
+		licensings = []ds.Licensing{}
 	}
 
-	// Подсчёт лайков для каждой модели
 	type Card struct {
-		ds.LicensingModel
+		ds.Licensing
 		LikesCount int64
 		ImageURL   string
 	}
@@ -46,13 +44,12 @@ func (h *Handler) LicensingsGrid(ctx *gin.Context) {
 	for i, l := range licensings {
 		imageURL := l.ImageURL
 		if imageURL == "" {
-			imageURL = "/static/img/default_image.png"
+			imageURL = defaultImage
 		}
-
 		c := Card{
-			LicensingModel: l,
-			LikesCount:     h.Repository.GetLikesCount(l.ID),
-			ImageURL:       imageURL,
+			Licensing:  l,
+			LikesCount: h.Repository.GetLikesCount(l.ID),
+			ImageURL:   imageURL,
 		}
 		if i%2 == 0 {
 			leftCol = append(leftCol, c)
@@ -69,7 +66,6 @@ func (h *Handler) LicensingsGrid(ctx *gin.Context) {
 	})
 }
 
-// GET /licensing/:id
 func (h *Handler) LicensingFeed(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)
@@ -78,7 +74,6 @@ func (h *Handler) LicensingFeed(ctx *gin.Context) {
 		return
 	}
 
-	// ?next=true
 	if ctx.Query("next") == "true" {
 		next, err := h.Repository.GetNextPublishedLicensing(id)
 		if err == nil && next != nil {
@@ -97,14 +92,13 @@ func (h *Handler) LicensingFeed(ctx *gin.Context) {
 		return
 	}
 
-	// Если URL пустые — подставляем дефолтные
-	imageURL := licensing.ImageURL
-	if imageURL == "" {
-		imageURL = defaultImage
-	}
 	videoURL := licensing.VideoURL
 	if videoURL == "" {
 		videoURL = defaultVideo
+	}
+	posterURL := licensing.ImageURL
+	if posterURL == "" {
+		posterURL = defaultImage
 	}
 
 	full := ctx.Query("full") == "true"
@@ -115,8 +109,8 @@ func (h *Handler) LicensingFeed(ctx *gin.Context) {
 
 	ctx.HTML(http.StatusOK, "licensingsFeed.html", gin.H{
 		"licensing": *licensing,
-		"imageURL":  imageURL,
 		"videoURL":  videoURL,
+		"imageURL":  posterURL,
 		"likeCount": h.Repository.GetLikesCount(licensing.ID),
 		"shortDesc": shortDesc,
 		"fullDesc":  licensing.Description,
@@ -124,7 +118,6 @@ func (h *Handler) LicensingFeed(ctx *gin.Context) {
 	})
 }
 
-// GET /licensings/add
 func (h *Handler) AddLicensing(ctx *gin.Context) {
 	draft, err := h.Repository.GetDraft()
 	if err != nil {
@@ -132,28 +125,36 @@ func (h *Handler) AddLicensing(ctx *gin.Context) {
 		return
 	}
 
-	// Если черновика нет — отдаём пустую модель
-	if draft == nil {
-		draft = &ds.LicensingModel{}
+	imageURL := defaultImage
+	videoURL := defaultVideo
+	var draftModel ds.Licensing
+	if draft != nil {
+		draftModel = *draft
+		if draft.ImageURL != "" {
+			imageURL = draft.ImageURL
+		}
+		if draft.VideoURL != "" {
+			videoURL = draft.VideoURL
+		}
 	}
 
 	ctx.HTML(http.StatusOK, "addLicensing.html", gin.H{
-		"draft": *draft,
+		"draft":    draftModel,
+		"imageURL": imageURL,
+		"videoURL": videoURL,
 	})
 }
 
-// POST /licensings — создание через ORM
 func (h *Handler) CreateLicensing(ctx *gin.Context) {
 	title := ctx.PostForm("title")
 	description := ctx.PostForm("description")
-	licenseType := ctx.PostForm("license_type")
 	imageURL := ctx.PostForm("image_url")
 	videoURL := ctx.PostForm("video_url")
 	commission, _ := strconv.ParseFloat(ctx.PostForm("commission"), 64)
 	minForCalc, _ := strconv.Atoi(ctx.PostForm("min_for_calc"))
 
 	licensing, err := h.Repository.CreateDraft(
-		title, description, licenseType, imageURL, videoURL, commission, minForCalc,
+		title, description, imageURL, videoURL, commission, minForCalc,
 	)
 	if err != nil {
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
@@ -163,7 +164,6 @@ func (h *Handler) CreateLicensing(ctx *gin.Context) {
 	ctx.Redirect(http.StatusFound, "/licensings/add?id="+strconv.Itoa(int(licensing.ID)))
 }
 
-// POST /licensings/publish — публикация через ORM
 func (h *Handler) PublishLicensing(ctx *gin.Context) {
 	idStr := ctx.PostForm("licensing_id")
 	id, err := strconv.Atoi(idStr)
@@ -172,8 +172,7 @@ func (h *Handler) PublishLicensing(ctx *gin.Context) {
 		return
 	}
 
-	err = h.Repository.PublishLicensing(uint(id))
-	if err != nil {
+	if err := h.Repository.PublishLicensing(uint(id)); err != nil {
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
 		return
 	}
@@ -181,7 +180,6 @@ func (h *Handler) PublishLicensing(ctx *gin.Context) {
 	ctx.Redirect(http.StatusFound, "/licensings")
 }
 
-// POST /licensings/delete — удаление через SQL UPDATE
 func (h *Handler) DeleteLicensing(ctx *gin.Context) {
 	idStr := ctx.PostForm("licensing_id")
 	id, err := strconv.Atoi(idStr)
@@ -190,8 +188,7 @@ func (h *Handler) DeleteLicensing(ctx *gin.Context) {
 		return
 	}
 
-	err = h.Repository.DeleteLicensing(uint(id))
-	if err != nil {
+	if err := h.Repository.DeleteLicensing(uint(id)); err != nil {
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
 		return
 	}

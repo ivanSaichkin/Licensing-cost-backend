@@ -3,6 +3,7 @@
     padding: 0;
     box-sizing: border-box;
 }
+
 body {
     background: #FFFFFF;
     display: flex;
@@ -11,6 +12,7 @@ body {
     min-height: 100vh;
     font-family: 'Inter', sans-serif;
 }
+
 .app-container {
     width: 390px;
     height: 844px;
@@ -20,6 +22,7 @@ body {
     flex-direction: column;
     overflow: hidden;
 }
+
 .add-page {
     flex: 1;
     display: flex;
@@ -29,6 +32,7 @@ body {
     overflow-y: auto;
     gap: 12px;
 }
+
 .page-title {
     font-weight: 800;
     font-size: 22px;
@@ -37,53 +41,83 @@ body {
     margin-bottom: 4px;
 }
 
-/* Раскрывающийся список для выбора медиа */
+/* ==== ВЫБОР МЕДИА (фото / видео) ==== */
+
 .media-picker {
     border: 1px solid #E0E4E9;
     border-radius: 12px;
     background: #FFFFFF;
     overflow: hidden;
 }
+
 .media-summary {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 12px 14px;
+    gap: 10px;
+    padding: 10px 12px;
     cursor: pointer;
     list-style: none;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 13px;
     color: #242424;
-}
-.media-summary::-webkit-details-marker { display: none; }
-.media-summary::after {
-    content: "▾";
-    font-size: 12px;
-    color: #6B7280;
-    transition: transform 0.2s;
-}
-.media-picker[open] .media-summary::after {
-    transform: rotate(180deg);
-}
-.media-hint {
-    font-size: 12px;
-    color: #6B7280;
-    font-weight: 500;
-    margin-left: 6px;
+    transition: border-color 0.2s;
 }
 
-/* Список превью с прокруткой */
+.media-summary::-webkit-details-marker {
+    display: none;
+}
+
+.media-summary:hover {
+    background: #F9FAFB;
+}
+
+/* Превью выбранного файла в поле */
+.summary-thumb {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: #F3F5F9;
+    flex-shrink: 0;
+}
+
+.media-label {
+    flex: 1;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.media-hint {
+    font-size: 11px;
+    color: #6B7280;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+/* Стрелка-индикатор */
+.media-hint::after {
+    content: " ▾";
+    display: inline-block;
+    transition: transform 0.2s;
+}
+
+.media-picker[open] .media-hint::after {
+    transform: rotate(180deg);
+}
+
+/* Список вариантов */
 .media-list {
     display: flex;
     flex-direction: column;
     gap: 8px;
     padding: 8px 12px 12px;
     border-top: 1px solid #F0F2F5;
-    max-height: 160px;      /* ограничиваем высоту — примерно 3 варианта */
-    overflow-y: auto;       /* включаем скролл, если вариантов больше */
+    max-height: 160px;
+    overflow-y: auto;
 }
 
-/* Стилизация скроллбара */
+/* Скроллбар */
 .media-list::-webkit-scrollbar {
     width: 6px;
 }
@@ -108,16 +142,20 @@ body {
     border-radius: 8px;
     cursor: pointer;
     transition: border-color 0.2s, background 0.2s;
-    flex-shrink: 0;         /* чтобы варианты не сжимались */
+    flex-shrink: 0;
 }
+
 .media-option:hover {
     border-color: #0072c6;
     background: #F0F7FF;
 }
+
 .media-option input[type="radio"] {
     accent-color: #0072c6;
     cursor: pointer;
+    flex-shrink: 0;
 }
+
 .media-option img,
 .media-option video {
     width: 48px;
@@ -127,6 +165,7 @@ body {
     background: #F3F5F9;
     flex-shrink: 0;
 }
+
 .media-option span {
     font-size: 12px;
     color: #5C5C5C;
@@ -135,23 +174,29 @@ body {
     text-overflow: ellipsis;
 }
 
-/* Поля ввода */
+/* ==== ПОЛЯ ФОРМЫ ==== */
+
 .form-fields {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
+
 .field {
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
+
 .field label {
     font-weight: 600;
     font-size: 14px;
     color: #242424;
 }
-.field input, .field textarea, .field select {
+
+.field input,
+.field textarea,
+.field select {
     padding: 10px 12px;
     border: 1px solid #E0E4E9;
     border-radius: 12px;
@@ -162,15 +207,44 @@ body {
     outline: none;
     transition: border-color 0.2s;
 }
-.field input:focus, .field textarea:focus, .field select:focus {
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
     border-color: #0072c6;
 }
+
 .field textarea {
     resize: vertical;
     min-height: 70px;
 }
 
-/* Навигация */
+/* ==== КНОПКА (Далее / Опубликовать) ==== */
+
+.cta-action {
+    width: 100%;
+    padding: 12px;
+    background: #0072c6;
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s;
+}
+
+.cta-action:hover {
+    background: #005A9E;
+}
+
+.cta-action:active {
+    transform: scale(0.98);
+}
+
+/* ==== НИЖНЯЯ НАВИГАЦИЯ ==== */
+
 .bottom-nav {
     flex-shrink: 0;
     height: 52px;
@@ -181,6 +255,7 @@ body {
     align-items: center;
     padding: 0 16px;
 }
+
 .nav-item {
     display: flex;
     flex-direction: column;
@@ -192,27 +267,14 @@ body {
     line-height: 13px;
     transition: color 0.2s;
 }
-.nav-item:hover { color: #0072c6; }
+
+.nav-item:hover {
+    color: #0072c6;
+}
+
 .nav-item.active {
     color: #0072c6;
     font-weight: 700;
     text-decoration: underline;
     text-underline-offset: 4px;
 }
-
-.cta-action {
-    width: 100%;
-    padding: 10px;
-    background: #0072c6;
-    border: none;
-    border-radius: 12px;
-    color: #fff;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    margin-top: 8px;
-    transition: background 0.2s;
-}
-.cta-action:hover { background: #005A9E; }
-.cta-publish { background: #1a9e3a; }
-.cta-publish:hover { background: #147a2c; }

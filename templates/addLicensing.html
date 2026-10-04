@@ -13,39 +13,46 @@
             <div class="page-title">Новая модель лицензирования</div>
 
             <form action="/licensings" method="POST" id="add-form">
-                <!-- Выбор изображения -->
+                <!-- Изображение -->
                 <details class="media-picker">
                     <summary class="media-summary">
+                        <img src="{{ .imageURL }}" alt="" class="summary-thumb">
                         <span class="media-label">Изображение</span>
                         <span class="media-hint">Выбрать ▾</span>
                     </summary>
                     <div class="media-list">
                         <label class="media-option">
                             <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/per_user.jpg">
-                            <img src="http://localhost:9000/licensing-images/per_user.jpg" alt="">
+                            <img src="http://localhost:9000/licensing-images/per_user.jpg" alt="" onerror="this.src='/static/img/default_image.png'">
                             <span>per_user.jpg</span>
                         </label>
                         <label class="media-option">
                             <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/per_core.jpg">
-                            <img src="http://localhost:9000/licensing-images/per_core.jpg" alt="">
+                            <img src="http://localhost:9000/licensing-images/per_core.jpg" alt="" onerror="this.src='/static/img/default_image.png'">
                             <span>per_core.jpg</span>
                         </label>
                         <label class="media-option">
                             <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/subscription.jpg">
-                            <img src="http://localhost:9000/licensing-images/subscription.jpg" alt="">
+                            <img src="http://localhost:9000/licensing-images/subscription.jpg" alt="" onerror="this.src='/static/img/default_image.png'">
                             <span>subscription.jpg</span>
                         </label>
                         <label class="media-option">
                             <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/enterprise.jpg">
-                            <img src="http://localhost:9000/licensing-images/enterprise.jpg" alt="">
+                            <img src="http://localhost:9000/licensing-images/enterprise.jpg" alt="" onerror="this.src='/static/img/default_image.png'">
                             <span>enterprise.jpg</span>
+                        </label>
+                        <label class="media-option">
+                            <input type="radio" name="image_url" value="http://localhost:9000/licensing-images/concurrent.jpg">
+                            <img src="http://localhost:9000/licensing-images/concurrent.jpg" alt="" onerror="this.src='/static/img/default_image.png'">
+                            <span>concurrent.jpg</span>
                         </label>
                     </div>
                 </details>
 
-                <!-- Выбор видео -->
+                <!-- Видео -->
                 <details class="media-picker">
                     <summary class="media-summary">
+                        <video src="{{ .videoURL }}" muted class="summary-thumb"></video>
                         <span class="media-label">Видео</span>
                         <span class="media-hint">Выбрать ▾</span>
                     </summary>
@@ -65,46 +72,51 @@
                             <video src="http://localhost:9000/licensing-images/subscription.mp4" muted></video>
                             <span>subscription.mp4</span>
                         </label>
+                        <label class="media-option">
+                            <input type="radio" name="video_url" value="http://localhost:9000/licensing-images/enterprise.mp4">
+                            <video src="http://localhost:9000/licensing-images/enterprise.mp4" muted></video>
+                            <span>enterprise.mp4</span>
+                        </label>
+                        <label class="media-option">
+                            <input type="radio" name="video_url" value="http://localhost:9000/licensing-images/concurrent.mp4">
+                            <video src="http://localhost:9000/licensing-images/concurrent.mp4" muted></video>
+                            <span>concurrent.mp4</span>
+                        </label>
                     </div>
                 </details>
 
                 <div class="form-fields">
                     <div class="field">
                         <label>Название</label>
-                        <input type="text" name="title" value="{{ .draft.Title }}">
+                        <input type="text" name="title"
+                               value="{{ if .draft.Title }}{{ .draft.Title }}{{ else }}Новая модель{{ end }}">
                     </div>
                     <div class="field">
                         <label>Описание</label>
-                        <textarea name="description">{{ .draft.Description }}</textarea>
-                    </div>
-                    <div class="field">
-                        <label>Тип лицензирования</label>
-                        <select name="license_type">
-                            <option value="per_user">per_user</option>
-                            <option value="per_core">per_core</option>
-                            <option value="subscription">subscription</option>
-                            <option value="enterprise">enterprise</option>
-                            <option value="concurrent">concurrent</option>
-                        </select>
+                        <textarea name="description">{{ if .draft.Description }}{{ .draft.Description }}{{ else }}Описание модели лицензирования{{ end }}</textarea>
                     </div>
                     <div class="field">
                         <label>Комиссия за 1 ед.</label>
-                        <input type="text" name="commission" value="{{ .draft.CommissionPerUnit }}">
+                        <input type="text" name="commission"
+                               value="{{ if .draft.CommissionPerUnit }}{{ .draft.CommissionPerUnit }}{{ else }}100{{ end }}">
                     </div>
                     <div class="field">
                         <label>Минимальное число для расчёта</label>
-                        <input type="text" name="min_for_calc" value="{{ .draft.MinForCalc }}">
+                        <input type="text" name="min_for_calc"
+                               value="{{ if .draft.MinForCalc }}{{ .draft.MinForCalc }}{{ else }}1{{ end }}">
                     </div>
                 </div>
-
-                <button type="submit" class="cta-action">Далее</button>
             </form>
 
             {{ if eq .draft.Status "draft" }}
+            <!-- Черновик уже создан → показываем "Опубликовать" -->
             <form action="/licensings/publish" method="POST">
                 <input type="hidden" name="licensing_id" value="{{ .draft.ID }}">
-                <button type="submit" class="cta-action cta-publish">Опубликовать</button>
+                <button type="submit" class="cta-action">Опубликовать</button>
             </form>
+            {{ else }}
+            <!-- Новый черновик → показываем "Далее" -->
+            <button type="submit" form="add-form" class="cta-action">Далее</button>
             {{ end }}
         </main>
 
