@@ -1,197 +1,307 @@
 package handler
 
 import (
+	"errors"
+	"fmt"
+	"mime/multipart"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 
 	"licensing-cost/internal/app/ds"
+	"licensing-cost/internal/app/repository"
 )
 
-const defaultImage = "/static/img/default_image.png"
-const defaultVideo = "/static/img/default_video.mp4"
+var licensingImageExtensions = map[string]string{
+	"image/jpeg": ".jpg",
+	"image/png":  ".png",
+	"image/webp": ".webp",
+}
 
-func (h *Handler) LicensingsGrid(ctx *gin.Context) {
-	commissionParam := ctx.Query("max_commission")
+var licensingVideoExtensions = map[string]string{
+	"video/webm": ".webm",
+	"video/mp4":  ".mp4",
+}
+
+// GET /api/licensings?max_commission=
+func (h *Handler) GetLicensings(ctx *gin.Context) {
 	var licensings []ds.Licensing
 	var err error
 
-	if commissionParam == "" {
-		licensings, err = h.Repository.GetAllPublishedLicensings()
-	} else {
-		maxComm, convErr := strconv.ParseFloat(commissionParam, 64)
-		if convErr != nil {
-			licensings, err = h.Repository.GetAllPublishedLicensings()
-		} else {
-			licensings, err = h.Repository.FilterLicensingsByCommission(maxComm)
-		}
-	}
+	maxCommission, _ := strconv.ParseFloat(ctx.Query("max_commission"), 64)
+	licensings, err = h.Repository.GetPublishedLicensings(maxCommission)
 	if err != nil {
-		logrus.Error(err)
-		licensings = []ds.Licensing{}
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
 	}
 
-	type Card struct {
-		ds.Licensing
-		LikesCount int64
-		ImageURL   string
+	ids := make([]uint, 0, len(licensings))
+	for _, l := range licensings {
+		ids = append(ids, l.ID)
+	}
+	likesCounts, err := h.Repository.GetLicensingsLikesCounts(ids)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
 	}
 
-	var leftCol, rightCol []Card
-	for i, l := range licensings {
-		imageURL := l.ImageURL
-		if imageURL == "" {
-			imageURL = defaultImage
-		}
-		c := Card{
-			Licensing:  l,
-			LikesCount: h.Repository.GetLikesCount(l.ID),
-			ImageURL:   imageURL,
-		}
-		if i%2 == 0 {
-			leftCol = append(leftCol, c)
-		} else {
-			rightCol = append(rightCol, c)
-		}
+	serializers := make([]ds.LicensingListSerializer, 0, len(licensings))
+	for _, l := range licensings {
+		serializers = append(
+			serializers,
+			ds.NewLicensingListSerializer(l, likesCounts[l.ID], CurrentUserID()),
+		)
 	}
 
-	ctx.HTML(http.StatusOK, "licensingsGrid.html", gin.H{
-		"time":           time.Now().Format("15:04:05"),
-		"leftCol":        leftCol,
-		"rightCol":       rightCol,
-		"max_commission": commissionParam,
-	})
+	ctx.JSON(http.StatusOK, serializers)
 }
 
-func (h *Handler) LicensingFeed(ctx *gin.Context) {
-	idStr := ctx.Param("id")
-	id, err := strconv.Atoi(idStr)
+// GET /api/licensing/feed
+func (h *Handler) GetLicensingReel(ctx *gin.Context) {
+	var licensing ds.Licensing
+	var err error
+
+	idStr := ctx.Query("id")
+	nextStr := ctx.Query("next")
+
+	switch {
+	case idStr == "":
+		// первая
+		licensing, err = h.Repository.GetFirstPublishedLicensing()
+	case nextStr == "true":
+		// следующая
+		id, convErr := strconv.Atoi(idStr)
+		if convErr != nil {
+			h.errorHandler(ctx, http.StatusBadRequest, convErr)
+			return
+		}
+		licensing, err = h.Repository.GetNextPublishedLicensing(id)
+	default:
+		// конкретная по id
+		id, convErr := strconv.Atoi(idStr)
+		if convErr != nil {
+			h.errorHandler(ctx, http.StatusBadRequest, convErr)
+			return
+		}
+		licensing, err = h.Repository.GetPublishedLicensingByID(id)
+	}
+
+	if err != nil {
+		h.repositoryErrorHandler(ctx, err)
+		return
+	}
+
+	h.respondLicensing(ctx, http.StatusOK, licensing)
+}
+
+// GET /api/licensings/draft
+func (h *Handler) GetLicensingDraft(ctx *gin.Context) {
+	draft, err := h.Repository.GetLicensingDraft(CurrentUserID())
+	if err != nil {
+		h.repositoryErrorHandler(ctx, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, ds.NewLicensingDraftSerializer(draft))
+}
+
+// POST /api/licensings
+func (h *Handler) CreateLicensing(ctx *gin.Context) {
+	if err := ctx.Request.ParseMultipartForm(50 << 20); err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	_, err := h.Repository.GetLicensingDraft(CurrentUserID())
+	if err == nil {
+		h.errorHandler(ctx, http.StatusConflict, errors.New("черновик уже существует"))
+		return
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	title := ctx.Request.FormValue("title")
+	if title == "" {
+		h.errorHandler(ctx, http.StatusBadRequest, errors.New("не указано название"))
+		return
+	}
+
+	imageHeader, err := ctx.FormFile("image")
+	if err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+	videoHeader, err := ctx.FormFile("video")
 	if err != nil {
 		h.errorHandler(ctx, http.StatusBadRequest, err)
 		return
 	}
 
-	if ctx.Query("next") == "true" {
-		next, err := h.Repository.GetNextPublishedLicensing(id)
-		if err == nil && next != nil {
-			ctx.Redirect(http.StatusFound, "/licensing/"+strconv.Itoa(int(next.ID)))
-			return
-		}
-	}
-
-	licensing, err := h.Repository.GetLicensingByID(id)
+	imageContentType, imageExtension, err := detectLicensingMediaType(imageHeader, licensingImageExtensions)
 	if err != nil {
-		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		h.errorHandler(ctx, http.StatusBadRequest, err)
 		return
 	}
-	if licensing == nil {
-		ctx.String(http.StatusNotFound, "Модель не найдена")
-		return
-	}
-
-	videoURL := licensing.VideoURL
-	if videoURL == "" {
-		videoURL = defaultVideo
-	}
-	posterURL := licensing.ImageURL
-	if posterURL == "" {
-		posterURL = defaultImage
-	}
-
-	full := ctx.Query("full") == "true"
-	shortDesc := licensing.Description
-	if len(shortDesc) > 80 {
-		shortDesc = shortDesc[:80] + "..."
-	}
-
-	ctx.HTML(http.StatusOK, "licensingsFeed.html", gin.H{
-		"licensing": *licensing,
-		"videoURL":  videoURL,
-		"imageURL":  posterURL,
-		"likeCount": h.Repository.GetLikesCount(licensing.ID),
-		"shortDesc": shortDesc,
-		"fullDesc":  licensing.Description,
-		"showFull":  full,
-	})
-}
-
-func (h *Handler) AddLicensing(ctx *gin.Context) {
-	draft, err := h.Repository.GetDraft()
+	videoContentType, videoExtension, err := detectLicensingMediaType(videoHeader, licensingVideoExtensions)
 	if err != nil {
-		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		h.errorHandler(ctx, http.StatusBadRequest, err)
 		return
 	}
 
-	imageURL := defaultImage
-	videoURL := defaultVideo
-	var draftModel ds.Licensing
-	if draft != nil {
-		draftModel = *draft
-		if draft.ImageURL != "" {
-			imageURL = draft.ImageURL
-		}
-		if draft.VideoURL != "" {
-			videoURL = draft.VideoURL
-		}
-	}
+	commission, _ := strconv.ParseFloat(ctx.Request.FormValue("commission_per_unit"), 64)
+	minForCalc, _ := strconv.Atoi(ctx.Request.FormValue("min_for_calc"))
 
-	ctx.HTML(http.StatusOK, "addLicensing.html", gin.H{
-		"draft":    draftModel,
-		"imageURL": imageURL,
-		"videoURL": videoURL,
-	})
-}
-
-func (h *Handler) CreateLicensing(ctx *gin.Context) {
-	title := ctx.PostForm("title")
-	description := ctx.PostForm("description")
-	imageURL := ctx.PostForm("image_url")
-	videoURL := ctx.PostForm("video_url")
-	commission, _ := strconv.ParseFloat(ctx.PostForm("commission"), 64)
-	minForCalc, _ := strconv.Atoi(ctx.PostForm("min_for_calc"))
-
-	licensing, err := h.Repository.CreateDraft(
-		title, description, imageURL, videoURL, commission, minForCalc,
+	licensing, err := h.Repository.CreateLicensingDraft(
+		CurrentUserID(),
+		title,
+		ctx.Request.FormValue("description"),
+		commission,
+		minForCalc,
 	)
 	if err != nil {
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.Redirect(http.StatusFound, "/licensings/add?id="+strconv.Itoa(int(licensing.ID)))
+	err = h.Repository.AddLicensingMedia(
+		&licensing,
+		repository.LicensingMediaFile{
+			Header:      imageHeader,
+			ContentType: imageContentType,
+			Filename:    fmt.Sprintf("licensing-%d-image%s", licensing.ID, imageExtension),
+		},
+		repository.LicensingMediaFile{
+			Header:      videoHeader,
+			ContentType: videoContentType,
+			Filename:    fmt.Sprintf("licensing-%d-video%s", licensing.ID, videoExtension),
+		},
+	)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	h.respondLicensing(ctx, http.StatusCreated, licensing)
 }
 
+// PUT /api/licensings/:id/publish
 func (h *Handler) PublishLicensing(ctx *gin.Context) {
-	idStr := ctx.PostForm("licensing_id")
-	id, err := strconv.Atoi(idStr)
+	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		h.errorHandler(ctx, http.StatusBadRequest, err)
 		return
 	}
 
-	if err := h.Repository.PublishLicensing(uint(id)); err != nil {
-		h.errorHandler(ctx, http.StatusInternalServerError, err)
+	if err := h.Repository.PublishLicensing(id, CurrentUserID()); err != nil {
+		h.repositoryErrorHandler(ctx, err)
 		return
 	}
 
-	ctx.Redirect(http.StatusFound, "/licensings")
+	licensing, err := h.Repository.GetPublishedLicensingByID(id)
+	if err != nil {
+		h.repositoryErrorHandler(ctx, err)
+		return
+	}
+
+	h.respondLicensing(ctx, http.StatusOK, licensing)
 }
 
+// DELETE /api/licensings/:id
 func (h *Handler) DeleteLicensing(ctx *gin.Context) {
-	idStr := ctx.PostForm("licensing_id")
-	id, err := strconv.Atoi(idStr)
+	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		h.errorHandler(ctx, http.StatusBadRequest, err)
 		return
 	}
 
-	if err := h.Repository.DeleteLicensing(uint(id)); err != nil {
+	if err := h.Repository.DeleteLicensing(id, CurrentUserID()); err != nil {
+		h.repositoryErrorHandler(ctx, err)
+		return
+	}
+	ctx.Status(http.StatusOK)
+}
+
+// POST /api/licensings/:id/like
+func (h *Handler) LikeLicensing(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	var request ds.LicensingLikeRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	licensing, err := h.Repository.GetPublishedLicensingByID(id)
+	if err != nil {
+		h.repositoryErrorHandler(ctx, err)
+		return
+	}
+
+	if *request.Like == 1 {
+		err = h.Repository.LikeLicensing(CurrentUserID(), licensing.ID)
+	} else {
+		err = h.Repository.UnlikeLicensing(CurrentUserID(), licensing.ID)
+	}
+	if err != nil {
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.Redirect(http.StatusFound, "/licensings")
+	h.respondLicensing(ctx, http.StatusOK, licensing)
+}
+
+// respondLicensing — сериализация + likes
+func (h *Handler) respondLicensing(ctx *gin.Context, statusCode int, l ds.Licensing) {
+	likesCount, err := h.Repository.GetLicensingLikesCount(l.ID)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	isLiked, err := h.Repository.IsLicensingLiked(CurrentUserID(), l.ID)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(statusCode, ds.NewLicensingFeedSerializer(l, likesCount, isLiked))
+}
+
+func (h *Handler) repositoryErrorHandler(ctx *gin.Context, err error) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		h.errorHandler(ctx, http.StatusNotFound, err)
+		return
+	}
+	h.errorHandler(ctx, http.StatusInternalServerError, err)
+}
+
+func detectLicensingMediaType(
+	header *multipart.FileHeader,
+	extensions map[string]string,
+) (string, string, error) {
+	file, err := header.Open()
+	if err != nil {
+		return "", "", err
+	}
+	defer file.Close()
+
+	buffer := make([]byte, 512)
+	n, err := file.Read(buffer)
+	if err != nil {
+		return "", "", err
+	}
+
+	contentType := http.DetectContentType(buffer[:n])
+	extension, ok := extensions[contentType]
+	if !ok {
+		return "", "", fmt.Errorf("недопустимый тип файла: %s", contentType)
+	}
+	return contentType, extension, nil
 }

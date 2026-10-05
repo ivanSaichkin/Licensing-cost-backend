@@ -5,6 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"licensing-cost/internal/app/repository"
+	"licensing-cost/internal/app/singleton"
 )
 
 type Handler struct {
@@ -16,23 +17,31 @@ func NewHandler(r *repository.Repository) *Handler {
 }
 
 func (h *Handler) RegisterHandler(router *gin.Engine) {
-	router.GET("/licensings", h.LicensingsGrid)
-	router.GET("/licensing/:id", h.LicensingFeed)
-	router.GET("/licensings/add", h.AddLicensing)
-	router.POST("/licensings", h.CreateLicensing)
-	router.POST("/licensings/publish", h.PublishLicensing)
-	router.POST("/licensings/delete", h.DeleteLicensing)
-}
+	api := router.Group("/api")
+	{
+		// 3 GET
+		api.GET("/licensings", h.GetLicensings)
+		api.GET("/licensings/feed", h.GetLicensingReel)
+		api.GET("/licensings/draft", h.GetLicensingDraft)
 
-func (h *Handler) RegisterStatic(router *gin.Engine) {
-	router.LoadHTMLGlob("templates/*")
-	router.Static("/static", "./resources")
+		// POST / PUT / DELETE
+		api.POST("/licensings", h.CreateLicensing)
+		api.PUT("/licensings/:id/publish", h.PublishLicensing)
+		api.DELETE("/licensings/:id", h.DeleteLicensing)
+		api.POST("/licensings/:id/like", h.LikeLicensing)
+
+		// Домен пользователя
+		api.POST("/users/register", h.RegisterUser)
+		api.POST("/users/login", h.LoginUser)
+		api.POST("/users/logout", h.LogoutUser)
+	}
 }
 
 func (h *Handler) errorHandler(ctx *gin.Context, code int, err error) {
 	logrus.Error(err.Error())
-	ctx.JSON(code, gin.H{
-		"status":      "error",
-		"description": err.Error(),
-	})
+	ctx.JSON(code, gin.H{"message": err.Error()})
+}
+
+func CurrentUserID() uint {
+	return singleton.CurrentUserID()
 }

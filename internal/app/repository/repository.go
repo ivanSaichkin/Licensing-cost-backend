@@ -1,18 +1,44 @@
 package repository
 
 import (
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-type Repository struct {
-	db *gorm.DB
+type RepositorySettings struct {
+	PostgresDSN     string
+	MinioEndpoint   string
+	MinioAccessKey  string
+	MinioSecretKey  string
+	MinioBucketName string
+	MinioUseSSL     bool
 }
 
-func New(dsn string) (*Repository, error) {
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+type Repository struct {
+	db              *gorm.DB
+	minio           *minio.Client
+	minioBucketName string
+}
+
+func New(settings *RepositorySettings) (*Repository, error) {
+	db, err := gorm.Open(postgres.Open(settings.PostgresDSN), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
-	return &Repository{db: db}, nil
+
+	minioClient, err := minio.New(settings.MinioEndpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(settings.MinioAccessKey, settings.MinioSecretKey, ""),
+		Secure: settings.MinioUseSSL,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &Repository{
+		db:              db,
+		minio:           minioClient,
+		minioBucketName: settings.MinioBucketName,
+	}, nil
 }

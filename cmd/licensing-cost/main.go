@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -20,18 +21,22 @@ func main() {
 	router := gin.Default()
 	conf, err := config.NewConfig()
 	if err != nil {
-		logrus.Fatalf("error loading config: %v", err)
+		logrus.Fatalf("config error: %v", err)
 	}
 
-	postgresString := dsn.FromEnv()
-	fmt.Println("DSN:", postgresString)
-
-	rep, errRep := repository.New(postgresString)
+	rep, errRep := repository.New(&repository.RepositorySettings{
+		PostgresDSN:     dsn.FromEnv(),
+		MinioEndpoint:   os.Getenv("MINIO_ENDPOINT"),
+		MinioAccessKey:  os.Getenv("MINIO_ACCESS_KEY"),
+		MinioSecretKey:  os.Getenv("MINIO_SECRET_KEY"),
+		MinioBucketName: os.Getenv("MINIO_BUCKET_NAME"),
+		MinioUseSSL:     os.Getenv("MINIO_USE_SSL") == "true",
+	})
 	if errRep != nil {
-		logrus.Fatalf("error initializing repository: %v", errRep)
+		logrus.Fatalf("repository error: %v", errRep)
 	}
+	fmt.Println("Server initialized")
 
 	hand := handler.NewHandler(rep)
-	application := pkg.NewApp(conf, router, hand)
-	application.RunApp()
+	pkg.NewApp(conf, router, hand).RunApp()
 }
