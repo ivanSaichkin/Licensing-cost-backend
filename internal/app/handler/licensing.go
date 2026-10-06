@@ -26,7 +26,7 @@ var licensingVideoExtensions = map[string]string{
 }
 
 // GET /api/licensings?max_commission=
-func (h *Handler) GetLicensings(ctx *gin.Context) {
+func (h *Handler) GetLicensingsAPI(ctx *gin.Context) {
 	var licensings []ds.Licensing
 	var err error
 
@@ -59,7 +59,7 @@ func (h *Handler) GetLicensings(ctx *gin.Context) {
 }
 
 // GET /api/licensing/feed
-func (h *Handler) GetLicensingReel(ctx *gin.Context) {
+func (h *Handler) GetLicensingFeedAPI(ctx *gin.Context) {
 	var licensing ds.Licensing
 	var err error
 
@@ -97,7 +97,7 @@ func (h *Handler) GetLicensingReel(ctx *gin.Context) {
 }
 
 // GET /api/licensings/draft
-func (h *Handler) GetLicensingDraft(ctx *gin.Context) {
+func (h *Handler) GetLicensingDraftAPI(ctx *gin.Context) {
 	draft, err := h.Repository.GetLicensingDraft(CurrentUserID())
 	if err != nil {
 		h.repositoryErrorHandler(ctx, err)
@@ -107,7 +107,7 @@ func (h *Handler) GetLicensingDraft(ctx *gin.Context) {
 }
 
 // POST /api/licensings
-func (h *Handler) CreateLicensing(ctx *gin.Context) {
+func (h *Handler) CreateLicensingAPI(ctx *gin.Context) {
 	if err := ctx.Request.ParseMultipartForm(50 << 20); err != nil {
 		h.errorHandler(ctx, http.StatusBadRequest, err)
 		return
@@ -188,7 +188,7 @@ func (h *Handler) CreateLicensing(ctx *gin.Context) {
 }
 
 // PUT /api/licensings/:id/publish
-func (h *Handler) PublishLicensing(ctx *gin.Context) {
+func (h *Handler) PublishLicensingAPI(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		h.errorHandler(ctx, http.StatusBadRequest, err)
@@ -210,7 +210,7 @@ func (h *Handler) PublishLicensing(ctx *gin.Context) {
 }
 
 // DELETE /api/licensings/:id
-func (h *Handler) DeleteLicensing(ctx *gin.Context) {
+func (h *Handler) DeleteLicensingAPI(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		h.errorHandler(ctx, http.StatusBadRequest, err)
@@ -225,7 +225,7 @@ func (h *Handler) DeleteLicensing(ctx *gin.Context) {
 }
 
 // POST /api/licensings/:id/like
-func (h *Handler) LikeLicensing(ctx *gin.Context) {
+func (h *Handler) LikeLicensingAPI(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		h.errorHandler(ctx, http.StatusBadRequest, err)

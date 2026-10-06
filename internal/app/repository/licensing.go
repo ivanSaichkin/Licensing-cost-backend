@@ -12,7 +12,7 @@ import (
 	"licensing-cost/internal/app/ds"
 )
 
-// --- GET список опубликованных с фильтром ---
+// GET список опубликованных с фильтром
 
 func (r *Repository) GetPublishedLicensings(maxCommission float64) ([]ds.Licensing, error) {
 	var licensings []ds.Licensing
@@ -27,7 +27,7 @@ func (r *Repository) GetPublishedLicensings(maxCommission float64) ([]ds.Licensi
 	return licensings, nil
 }
 
-// --- GET лента (первая published) ---
+// GET лента (первая published)
 
 func (r *Repository) GetFirstPublishedLicensing() (ds.Licensing, error) {
 	var l ds.Licensing
@@ -58,7 +58,7 @@ func (r *Repository) GetNextPublishedLicensing(afterID int) (ds.Licensing, error
 	return l, nil
 }
 
-// --- GET черновик ---
+//GET черновик
 
 func (r *Repository) GetLicensingDraft(creatorID uint) (ds.Licensing, error) {
 	var l ds.Licensing
@@ -70,7 +70,7 @@ func (r *Repository) GetLicensingDraft(creatorID uint) (ds.Licensing, error) {
 	return l, nil
 }
 
-// --- POST создание с файлами ---
+// POST создание
 
 type LicensingMediaFile struct {
 	Header      *multipart.FileHeader
@@ -140,7 +140,7 @@ func (r *Repository) buildLicensingMediaURL(filename string) string {
 	return fmt.Sprintf("http://localhost:9000/%s/%s", r.minioBucketName, filename)
 }
 
-// --- PUT публикация ---
+//PUT публикация
 
 func (r *Repository) PublishLicensing(id int, creatorID uint) error {
 	result := r.db.Model(&ds.Licensing{}).
@@ -158,7 +158,7 @@ func (r *Repository) PublishLicensing(id int, creatorID uint) error {
 	return nil
 }
 
-// --- DELETE soft delete ---
+//DELETE soft delete
 
 func (r *Repository) DeleteLicensing(id int, creatorID uint) error {
 	result := r.db.Exec(
@@ -174,7 +174,7 @@ func (r *Repository) DeleteLicensing(id int, creatorID uint) error {
 	return nil
 }
 
-// --- Лайки ---
+//Лайки
 
 func (r *Repository) LikeLicensing(userID, licensingID uint) error {
 	like := ds.Like{UserID: userID, LicensingID: licensingID}

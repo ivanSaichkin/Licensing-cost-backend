@@ -9,7 +9,7 @@ import (
 )
 
 // POST /api/users/register
-func (h *Handler) RegisterUser(ctx *gin.Context) {
+func (h *Handler) RegisterUserAPI(ctx *gin.Context) {
 	var request ds.RegisterRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		h.errorHandler(ctx, http.StatusBadRequest, err)
@@ -26,7 +26,7 @@ func (h *Handler) RegisterUser(ctx *gin.Context) {
 }
 
 // POST /api/users/login — заглушка для ЛР4
-func (h *Handler) LoginUser(ctx *gin.Context) {
+func (h *Handler) LoginUserAPI(ctx *gin.Context) {
 	var request ds.LoginRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		h.errorHandler(ctx, http.StatusBadRequest, err)
@@ -36,6 +36,6 @@ func (h *Handler) LoginUser(ctx *gin.Context) {
 }
 
 // POST /api/users/logout — заглушка для ЛР4
-func (h *Handler) LogoutUser(ctx *gin.Context) {
+func (h *Handler) LogoutUserAPI(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "заглушка деавторизации"})
 }

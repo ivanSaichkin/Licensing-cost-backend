@@ -20,20 +20,20 @@ func (h *Handler) RegisterHandler(router *gin.Engine) {
 	api := router.Group("/api")
 	{
 		// 3 GET
-		api.GET("/licensings", h.GetLicensings)
-		api.GET("/licensings/feed", h.GetLicensingReel)
-		api.GET("/licensings/draft", h.GetLicensingDraft)
+		api.GET("/licensings", h.GetLicensingsAPI)
+		api.GET("/licensings/feed", h.GetLicensingFeedAPI)
+		api.GET("/licensings/draft", h.GetLicensingDraftAPI)
 
 		// POST / PUT / DELETE
-		api.POST("/licensings", h.CreateLicensing)
-		api.PUT("/licensings/:id/publish", h.PublishLicensing)
-		api.DELETE("/licensings/:id", h.DeleteLicensing)
-		api.POST("/licensings/:id/like", h.LikeLicensing)
+		api.POST("/licensings", h.CreateLicensingAPI)
+		api.PUT("/licensings/:id/publish", h.PublishLicensingAPI)
+		api.DELETE("/licensings/:id", h.DeleteLicensingAPI)
+		api.POST("/licensings/:id/like", h.LikeLicensingAPI)
 
 		// Домен пользователя
-		api.POST("/users/register", h.RegisterUser)
-		api.POST("/users/login", h.LoginUser)
-		api.POST("/users/logout", h.LogoutUser)
+		api.POST("/users/register", h.RegisterUserAPI)
+		api.POST("/users/login", h.LoginUserAPI)
+		api.POST("/users/logout", h.LogoutUserAPI)
 	}
 }
 
