@@ -12,7 +12,7 @@ import (
 	"licensing-cost/internal/app/ds"
 )
 
-// GET список опубликованных с фильтром
+// --- GET список опубликованных с фильтром ---
 
 func (r *Repository) GetPublishedLicensings(maxCommission float64) ([]ds.Licensing, error) {
 	var licensings []ds.Licensing
@@ -27,7 +27,7 @@ func (r *Repository) GetPublishedLicensings(maxCommission float64) ([]ds.Licensi
 	return licensings, nil
 }
 
-// GET лента (первая published)
+// --- GET лента (первая published) ---
 
 func (r *Repository) GetFirstPublishedLicensing() (ds.Licensing, error) {
 	var l ds.Licensing
@@ -58,7 +58,7 @@ func (r *Repository) GetNextPublishedLicensing(afterID int) (ds.Licensing, error
 	return l, nil
 }
 
-//GET черновик
+// --- GET черновик ---
 
 func (r *Repository) GetLicensingDraft(creatorID uint) (ds.Licensing, error) {
 	var l ds.Licensing
@@ -70,7 +70,7 @@ func (r *Repository) GetLicensingDraft(creatorID uint) (ds.Licensing, error) {
 	return l, nil
 }
 
-// POST создание
+// --- POST создание с файлами (без полей темы) ---
 
 type LicensingMediaFile struct {
 	Header      *multipart.FileHeader
@@ -81,17 +81,13 @@ type LicensingMediaFile struct {
 func (r *Repository) CreateLicensingDraft(
 	creatorID uint,
 	title, description string,
-	commission float64,
-	minForCalc int,
 ) (ds.Licensing, error) {
 	l := ds.Licensing{
-		Title:             title,
-		Description:       description,
-		CommissionPerUnit: commission,
-		MinForCalc:        minForCalc,
-		Status:            "draft",
-		CreatorID:         creatorID,
-		CreatedAt:         time.Now(),
+		Title:       title,
+		Description: description,
+		Status:      "draft",
+		CreatorID:   creatorID,
+		CreatedAt:   time.Now(),
 	}
 	if err := r.db.Create(&l).Error; err != nil {
 		return ds.Licensing{}, err
@@ -140,15 +136,26 @@ func (r *Repository) buildLicensingMediaURL(filename string) string {
 	return fmt.Sprintf("http://localhost:9000/%s/%s", r.minioBucketName, filename)
 }
 
-//PUT публикация
+// --- PUT публикация (здесь заполняем поля темы) ---
 
-func (r *Repository) PublishLicensing(id int, creatorID uint) error {
+func (r *Repository) PublishLicensing(id int, creatorID uint, req ds.PublishLicensingRequest) error {
+	updates := map[string]interface{}{
+		"status":       "published",
+		"published_at": time.Now(),
+	}
+	if req.Description != nil {
+		updates["description"] = *req.Description
+	}
+	if req.CommissionPerUnit != nil {
+		updates["commission_per_unit"] = *req.CommissionPerUnit
+	}
+	if req.MinForCalc != nil {
+		updates["min_for_calc"] = *req.MinForCalc
+	}
+
 	result := r.db.Model(&ds.Licensing{}).
 		Where("id = ? AND creator_id = ? AND status = ?", id, creatorID, "draft").
-		Updates(map[string]interface{}{
-			"status":       "published",
-			"published_at": time.Now(),
-		})
+		Updates(updates)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -158,7 +165,7 @@ func (r *Repository) PublishLicensing(id int, creatorID uint) error {
 	return nil
 }
 
-//DELETE soft delete
+// --- DELETE soft delete ---
 
 func (r *Repository) DeleteLicensing(id int, creatorID uint) error {
 	result := r.db.Exec(
@@ -174,7 +181,7 @@ func (r *Repository) DeleteLicensing(id int, creatorID uint) error {
 	return nil
 }
 
-//Лайки
+// --- Лайки ---
 
 func (r *Repository) LikeLicensing(userID, licensingID uint) error {
 	like := ds.Like{UserID: userID, LicensingID: licensingID}
@@ -228,16 +235,4 @@ func (r *Repository) GetLicensingsLikesCounts(ids []uint) (map[uint]int64, error
 		result[r.LicensingID] = r.Count
 	}
 	return result, nil
-}
-
-// --- MinIO ---
-
-func (r *Repository) UploadFile(objectName string, reader interface {
-	Read([]byte) (int, error)
-}, size int64, contentType string) error {
-	return nil
-}
-
-func (r *Repository) GetMinioBucketName() string {
-	return r.minioBucketName
 }

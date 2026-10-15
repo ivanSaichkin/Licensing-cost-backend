@@ -5,9 +5,9 @@ import "time"
 type Licensing struct {
 	ID                uint       `gorm:"primaryKey" json:"id"`
 	Title             string     `gorm:"type:varchar(100);not null" json:"title"`
-	Description       string     `gorm:"type:varchar(255)" json:"description"`
-	CommissionPerUnit float64    `gorm:"not null" json:"commission_per_unit"`
-	MinForCalc        int        `gorm:"not null" json:"min_for_calc"`
+	Description       string     `gorm:"type:varchar(500)" json:"description"`
+	CommissionPerUnit *float64   `gorm:"null" json:"commission_per_unit"`
+	MinForCalc        *int       `gorm:"null" json:"min_for_calc"`
 	ImageURL          string     `gorm:"type:varchar(255);not null;default:''" json:"image_url"`
 	VideoURL          string     `gorm:"type:varchar(255);not null;default:''" json:"video_url"`
 	Status            string     `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
@@ -71,4 +71,11 @@ func NewLicensingDraftSerializer(l Licensing) LicensingDraftSerializer {
 // LicensingLikeRequest — тело POST /api/licensings/:id/like
 type LicensingLikeRequest struct {
 	Like *int `json:"like" binding:"required,oneof=0 1"`
+}
+
+// PublishLicensingRequest — тело PUT /api/licensings/:id/publish
+type PublishLicensingRequest struct {
+	Description       *string  `json:"description"`
+	CommissionPerUnit *float64 `json:"commission_per_unit" binding:"required"`
+	MinForCalc        *int     `json:"min_for_calc" binding:"required"`
 }

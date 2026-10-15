@@ -64,14 +64,10 @@ func (h *Handler) GetLicensingFeedAPI(ctx *gin.Context) {
 	var err error
 
 	idStr := ctx.Query("id")
-	nextStr := ctx.Query("next")
-
 	switch {
 	case idStr == "":
-		// первая
 		licensing, err = h.Repository.GetFirstPublishedLicensing()
-	case nextStr == "true":
-		// следующая
+	case ctx.Query("next") == "true":
 		id, convErr := strconv.Atoi(idStr)
 		if convErr != nil {
 			h.errorHandler(ctx, http.StatusBadRequest, convErr)
@@ -79,7 +75,6 @@ func (h *Handler) GetLicensingFeedAPI(ctx *gin.Context) {
 		}
 		licensing, err = h.Repository.GetNextPublishedLicensing(id)
 	default:
-		// конкретная по id
 		id, convErr := strconv.Atoi(idStr)
 		if convErr != nil {
 			h.errorHandler(ctx, http.StatusBadRequest, convErr)
@@ -87,7 +82,6 @@ func (h *Handler) GetLicensingFeedAPI(ctx *gin.Context) {
 		}
 		licensing, err = h.Repository.GetPublishedLicensingByID(id)
 	}
-
 	if err != nil {
 		h.repositoryErrorHandler(ctx, err)
 		return
@@ -106,7 +100,7 @@ func (h *Handler) GetLicensingDraftAPI(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ds.NewLicensingDraftSerializer(draft))
 }
 
-// POST /api/licensings
+// POST /api/licensings — создание черновика (только title, description, image, video)
 func (h *Handler) CreateLicensingAPI(ctx *gin.Context) {
 	if err := ctx.Request.ParseMultipartForm(50 << 20); err != nil {
 		h.errorHandler(ctx, http.StatusBadRequest, err)
@@ -151,15 +145,10 @@ func (h *Handler) CreateLicensingAPI(ctx *gin.Context) {
 		return
 	}
 
-	commission, _ := strconv.ParseFloat(ctx.Request.FormValue("commission_per_unit"), 64)
-	minForCalc, _ := strconv.Atoi(ctx.Request.FormValue("min_for_calc"))
-
 	licensing, err := h.Repository.CreateLicensingDraft(
 		CurrentUserID(),
 		title,
 		ctx.Request.FormValue("description"),
-		commission,
-		minForCalc,
 	)
 	if err != nil {
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
@@ -187,7 +176,7 @@ func (h *Handler) CreateLicensingAPI(ctx *gin.Context) {
 	h.respondLicensing(ctx, http.StatusCreated, licensing)
 }
 
-// PUT /api/licensings/:id/publish
+// PUT /api/licensings/:id/publish — здесь передаём commission_per_unit и min_for_calc
 func (h *Handler) PublishLicensingAPI(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
@@ -195,7 +184,13 @@ func (h *Handler) PublishLicensingAPI(ctx *gin.Context) {
 		return
 	}
 
-	if err := h.Repository.PublishLicensing(id, CurrentUserID()); err != nil {
+	var request ds.PublishLicensingRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	if err := h.Repository.PublishLicensing(id, CurrentUserID(), request); err != nil {
 		h.repositoryErrorHandler(ctx, err)
 		return
 	}
@@ -257,7 +252,6 @@ func (h *Handler) LikeLicensingAPI(ctx *gin.Context) {
 	h.respondLicensing(ctx, http.StatusOK, licensing)
 }
 
-// respondLicensing — сериализация + likes
 func (h *Handler) respondLicensing(ctx *gin.Context, statusCode int, l ds.Licensing) {
 	likesCount, err := h.Repository.GetLicensingLikesCount(l.ID)
 	if err != nil {
