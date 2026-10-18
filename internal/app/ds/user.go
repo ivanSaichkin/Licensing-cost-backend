@@ -7,14 +7,18 @@ type User struct {
 	IsModerator bool   `gorm:"type:boolean;default:false" json:"is_moderator"`
 }
 
-// RegisterRequest — тело POST /api/users/register
 type RegisterRequest struct {
 	Login    string `json:"login" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
-// LoginRequest — тело POST /api/users/login (заглушка)
 type LoginRequest struct {
-	Login    string `json:"login"`
-	Password string `json:"password"`
+	Login    string `json:"login" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+type LoginResponse struct {
+	ExpiresIn   int64  `json:"expires_in"`
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
 }

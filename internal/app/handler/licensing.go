@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 
 	"licensing-cost/internal/app/ds"
@@ -25,8 +26,14 @@ var licensingVideoExtensions = map[string]string{
 	"video/mp4":  ".mp4",
 }
 
-// GET /api/licensings?max_commission=
-func (h *Handler) GetLicensingsAPI(ctx *gin.Context) {
+// GetLicensings godoc
+// @Summary      Список моделей
+// @Tags         licensings
+// @Produce      json
+// @Param        max_commission  query   number  false  "Макс. комиссия"
+// @Success      200  {array}   ds.LicensingListSerializer
+// @Router       /licensings [get]
+func (h *Handler) GetLicensings(ctx *gin.Context) {
 	var licensings []ds.Licensing
 	var err error
 
@@ -47,19 +54,27 @@ func (h *Handler) GetLicensingsAPI(ctx *gin.Context) {
 		return
 	}
 
+	userID := CurrentUserID(ctx)
 	serializers := make([]ds.LicensingListSerializer, 0, len(licensings))
 	for _, l := range licensings {
-		serializers = append(
-			serializers,
-			ds.NewLicensingListSerializer(l, likesCounts[l.ID], CurrentUserID()),
+		serializers = append(serializers,
+			ds.NewLicensingListSerializer(l, likesCounts[l.ID], userID),
 		)
 	}
 
 	ctx.JSON(http.StatusOK, serializers)
 }
 
-// GET /api/licensing/feed
-func (h *Handler) GetLicensingFeedAPI(ctx *gin.Context) {
+// GetLicensingReel godoc
+// @Summary      Лента
+// @Tags         licensings
+// @Produce      json
+// @Param        id    query     int   false  "ID"
+// @Param        next  query     bool  false  "Следующая"
+// @Success      200   {object}  ds.LicensingFeedSerializer
+// @Failure      404   {string}  string  "Not found"
+// @Router       /licensing/feed [get]
+func (h *Handler) GetLicensingReel(ctx *gin.Context) {
 	var licensing ds.Licensing
 	var err error
 
@@ -90,9 +105,17 @@ func (h *Handler) GetLicensingFeedAPI(ctx *gin.Context) {
 	h.respondLicensing(ctx, http.StatusOK, licensing)
 }
 
-// GET /api/licensings/draft
-func (h *Handler) GetLicensingDraftAPI(ctx *gin.Context) {
-	draft, err := h.Repository.GetLicensingDraft(CurrentUserID())
+// GetLicensingDraft godoc
+// @Summary      Черновик
+// @Tags         licensings
+// @Produce      json
+// @Security     Bearer
+// @Success      200  {object}  ds.LicensingDraftSerializer
+// @Failure      403  {string}  string  "Forbidden"
+// @Failure      404  {string}  string  "Not found"
+// @Router       /licensings/draft [get]
+func (h *Handler) GetLicensingDraft(ctx *gin.Context) {
+	draft, err := h.Repository.GetLicensingDraft(CurrentUserID(ctx))
 	if err != nil {
 		h.repositoryErrorHandler(ctx, err)
 		return
@@ -100,14 +123,28 @@ func (h *Handler) GetLicensingDraftAPI(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ds.NewLicensingDraftSerializer(draft))
 }
 
-// POST /api/licensings — создание черновика (только title, description, image, video)
-func (h *Handler) CreateLicensingAPI(ctx *gin.Context) {
+// CreateLicensing godoc
+// @Summary      Создать черновик
+// @Tags         licensings
+// @Accept       mpfd
+// @Produce      json
+// @Security     Bearer
+// @Param        title        formData  string  true   "Название"
+// @Param        description  formData  string  false  "Описание"
+// @Param        image        formData  file    true   "Изображение"
+// @Param        video        formData  file    true   "Видео"
+// @Success      201  {object}  ds.LicensingFeedSerializer
+// @Failure      409  {string}  string  "Conflict"
+// @Router       /licensings [post]
+func (h *Handler) CreateLicensing(ctx *gin.Context) {
 	if err := ctx.Request.ParseMultipartForm(50 << 20); err != nil {
 		h.errorHandler(ctx, http.StatusBadRequest, err)
 		return
 	}
 
-	_, err := h.Repository.GetLicensingDraft(CurrentUserID())
+	userID := CurrentUserID(ctx)
+	logrus.Infof("CreateLicensing: userID=%d", userID)
+	_, err := h.Repository.GetLicensingDraft(userID)
 	if err == nil {
 		h.errorHandler(ctx, http.StatusConflict, errors.New("черновик уже существует"))
 		return
@@ -146,9 +183,7 @@ func (h *Handler) CreateLicensingAPI(ctx *gin.Context) {
 	}
 
 	licensing, err := h.Repository.CreateLicensingDraft(
-		CurrentUserID(),
-		title,
-		ctx.Request.FormValue("description"),
+		userID, title, ctx.Request.FormValue("description"),
 	)
 	if err != nil {
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
@@ -176,8 +211,18 @@ func (h *Handler) CreateLicensingAPI(ctx *gin.Context) {
 	h.respondLicensing(ctx, http.StatusCreated, licensing)
 }
 
-// PUT /api/licensings/:id/publish — здесь передаём commission_per_unit и min_for_calc
-func (h *Handler) PublishLicensingAPI(ctx *gin.Context) {
+// PublishLicensing godoc
+// @Summary      Публикация
+// @Tags         licensings
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        id       path      int                         true  "ID"
+// @Param        request  body      ds.PublishLicensingRequest  true  "Данные"
+// @Success      200  {object}  ds.LicensingFeedSerializer
+// @Failure      404  {string}  string  "Not found"
+// @Router       /licensings/{id}/publish [put]
+func (h *Handler) PublishLicensing(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		h.errorHandler(ctx, http.StatusBadRequest, err)
@@ -190,7 +235,7 @@ func (h *Handler) PublishLicensingAPI(ctx *gin.Context) {
 		return
 	}
 
-	if err := h.Repository.PublishLicensing(id, CurrentUserID(), request); err != nil {
+	if err := h.Repository.PublishLicensing(id, CurrentUserID(ctx), request); err != nil {
 		h.repositoryErrorHandler(ctx, err)
 		return
 	}
@@ -204,23 +249,41 @@ func (h *Handler) PublishLicensingAPI(ctx *gin.Context) {
 	h.respondLicensing(ctx, http.StatusOK, licensing)
 }
 
-// DELETE /api/licensings/:id
-func (h *Handler) DeleteLicensingAPI(ctx *gin.Context) {
+// DeleteLicensing godoc
+// @Summary      Удаление (soft)
+// @Tags         licensings
+// @Produce      json
+// @Security     Bearer
+// @Param        id  path  int  true  "ID"
+// @Success      200  {string}  string  "OK"
+// @Failure      404  {string}  string  "Not found"
+// @Router       /licensings/{id} [delete]
+func (h *Handler) DeleteLicensing(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		h.errorHandler(ctx, http.StatusBadRequest, err)
 		return
 	}
 
-	if err := h.Repository.DeleteLicensing(id, CurrentUserID()); err != nil {
+	if err := h.Repository.DeleteLicensing(id, CurrentUserID(ctx)); err != nil {
 		h.repositoryErrorHandler(ctx, err)
 		return
 	}
 	ctx.Status(http.StatusOK)
 }
 
-// POST /api/licensings/:id/like
-func (h *Handler) LikeLicensingAPI(ctx *gin.Context) {
+// LikeLicensing godoc
+// @Summary      Лайк
+// @Tags         licensings
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        id       path      int                     true  "ID"
+// @Param        request  body      ds.LicensingLikeRequest true  "0 или 1"
+// @Success      200  {object}  ds.LicensingFeedSerializer
+// @Failure      404  {string}  string  "Not found"
+// @Router       /licensings/{id}/like [post]
+func (h *Handler) LikeLicensing(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		h.errorHandler(ctx, http.StatusBadRequest, err)
@@ -239,10 +302,11 @@ func (h *Handler) LikeLicensingAPI(ctx *gin.Context) {
 		return
 	}
 
+	userID := CurrentUserID(ctx)
 	if *request.Like == 1 {
-		err = h.Repository.LikeLicensing(CurrentUserID(), licensing.ID)
+		err = h.Repository.LikeLicensing(userID, licensing.ID)
 	} else {
-		err = h.Repository.UnlikeLicensing(CurrentUserID(), licensing.ID)
+		err = h.Repository.UnlikeLicensing(userID, licensing.ID)
 	}
 	if err != nil {
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
@@ -259,7 +323,8 @@ func (h *Handler) respondLicensing(ctx *gin.Context, statusCode int, l ds.Licens
 		return
 	}
 
-	isLiked, err := h.Repository.IsLicensingLiked(CurrentUserID(), l.ID)
+	userID := CurrentUserID(ctx)
+	isLiked, err := h.Repository.IsLicensingLiked(userID, l.ID)
 	if err != nil {
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
 		return

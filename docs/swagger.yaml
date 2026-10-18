@@ -1,0 +1,434 @@
+basePath: /api
+definitions:
+  ds.LicensingDraftSerializer:
+    properties:
+      commission_per_unit:
+        type: number
+      created_at:
+        type: string
+      creator_id:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      image_url:
+        type: string
+      min_for_calc:
+        type: integer
+      published_at:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      video_url:
+        type: string
+    type: object
+  ds.LicensingFeedSerializer:
+    properties:
+      commission_per_unit:
+        type: number
+      created_at:
+        type: string
+      creator_id:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      image_url:
+        type: string
+      is_liked:
+        description: 0/1
+        type: integer
+      likes_count:
+        type: integer
+      min_for_calc:
+        type: integer
+      published_at:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      video_url:
+        type: string
+    type: object
+  ds.LicensingLikeRequest:
+    properties:
+      like:
+        enum:
+        - 0
+        - 1
+        type: integer
+    required:
+    - like
+    type: object
+  ds.LicensingListSerializer:
+    properties:
+      commission_per_unit:
+        type: number
+      created_at:
+        type: string
+      creator_id:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      image_url:
+        type: string
+      is_creator:
+        description: 0/1
+        type: integer
+      likes_count:
+        type: integer
+      min_for_calc:
+        type: integer
+      published_at:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      video_url:
+        type: string
+    type: object
+  ds.LoginRequest:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  ds.LoginResponse:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+      token_type:
+        type: string
+    type: object
+  ds.PublishLicensingRequest:
+    properties:
+      commission_per_unit:
+        type: number
+      description:
+        type: string
+      min_for_calc:
+        type: integer
+    required:
+    - commission_per_unit
+    - min_for_calc
+    type: object
+  ds.RegisterRequest:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  ds.User:
+    properties:
+      id:
+        type: integer
+      is_moderator:
+        type: boolean
+      login:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API для работы с моделями лицензирования
+  title: Licensing Backend API
+  version: "1.0"
+paths:
+  /licensing/feed:
+    get:
+      parameters:
+      - description: ID
+        in: query
+        name: id
+        type: integer
+      - description: Следующая
+        in: query
+        name: next
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.LicensingFeedSerializer'
+        "404":
+          description: Not found
+          schema:
+            type: string
+      summary: Лента
+      tags:
+      - licensings
+  /licensings:
+    get:
+      parameters:
+      - description: Макс. комиссия
+        in: query
+        name: max_commission
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/ds.LicensingListSerializer'
+            type: array
+      summary: Список моделей
+      tags:
+      - licensings
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Название
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Описание
+        in: formData
+        name: description
+        type: string
+      - description: Изображение
+        in: formData
+        name: image
+        required: true
+        type: file
+      - description: Видео
+        in: formData
+        name: video
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ds.LicensingFeedSerializer'
+        "409":
+          description: Conflict
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Создать черновик
+      tags:
+      - licensings
+  /licensings/{id}:
+    delete:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "404":
+          description: Not found
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Удаление (soft)
+      tags:
+      - licensings
+  /licensings/{id}/like:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 0 или 1
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ds.LicensingLikeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.LicensingFeedSerializer'
+        "404":
+          description: Not found
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Лайк
+      tags:
+      - licensings
+  /licensings/{id}/publish:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Данные
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ds.PublishLicensingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.LicensingFeedSerializer'
+        "404":
+          description: Not found
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Публикация
+      tags:
+      - licensings
+  /licensings/draft:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.LicensingDraftSerializer'
+        "403":
+          description: Forbidden
+          schema:
+            type: string
+        "404":
+          description: Not found
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Черновик
+      tags:
+      - licensings
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Логин и пароль
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ds.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "403":
+          description: Forbidden
+          schema:
+            type: string
+      summary: Вход
+      tags:
+      - users
+  /users/logout:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Выход
+      tags:
+      - users
+  /users/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Данные
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ds.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ds.User'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal
+          schema:
+            type: string
+      summary: Регистрация
+      tags:
+      - users
+securityDefinitions:
+  Bearer:
+    description: 'Введите токен: Bearer {token}'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

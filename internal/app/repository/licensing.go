@@ -7,12 +7,11 @@ import (
 	"time"
 
 	"github.com/minio/minio-go/v7"
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 
 	"licensing-cost/internal/app/ds"
 )
-
-// --- GET список опубликованных с фильтром ---
 
 func (r *Repository) GetPublishedLicensings(maxCommission float64) ([]ds.Licensing, error) {
 	var licensings []ds.Licensing
@@ -21,56 +20,32 @@ func (r *Repository) GetPublishedLicensings(maxCommission float64) ([]ds.Licensi
 		q = q.Where("commission_per_unit <= ?", maxCommission)
 	}
 	err := q.Order("id ASC").Find(&licensings).Error
-	if err != nil {
-		return nil, err
-	}
-	return licensings, nil
+	return licensings, err
 }
-
-// --- GET лента (первая published) ---
 
 func (r *Repository) GetFirstPublishedLicensing() (ds.Licensing, error) {
 	var l ds.Licensing
-	err := r.db.Where("status = ?", "published").
-		Order("id ASC").First(&l).Error
-	if err != nil {
-		return ds.Licensing{}, err
-	}
-	return l, nil
+	err := r.db.Where("status = ?", "published").Order("id ASC").First(&l).Error
+	return l, err
 }
 
 func (r *Repository) GetPublishedLicensingByID(id int) (ds.Licensing, error) {
 	var l ds.Licensing
 	err := r.db.Where("id = ? AND status = ?", id, "published").First(&l).Error
-	if err != nil {
-		return ds.Licensing{}, err
-	}
-	return l, nil
+	return l, err
 }
 
 func (r *Repository) GetNextPublishedLicensing(afterID int) (ds.Licensing, error) {
 	var l ds.Licensing
-	err := r.db.Where("id > ? AND status = ?", afterID, "published").
-		Order("id ASC").First(&l).Error
-	if err != nil {
-		return ds.Licensing{}, err
-	}
-	return l, nil
+	err := r.db.Where("id > ? AND status = ?", afterID, "published").Order("id ASC").First(&l).Error
+	return l, err
 }
-
-// --- GET черновик ---
 
 func (r *Repository) GetLicensingDraft(creatorID uint) (ds.Licensing, error) {
 	var l ds.Licensing
-	err := r.db.Where("creator_id = ? AND status = ?", creatorID, "draft").
-		First(&l).Error
-	if err != nil {
-		return ds.Licensing{}, err
-	}
-	return l, nil
+	err := r.db.Where("creator_id = ? AND status = ?", creatorID, "draft").First(&l).Error
+	return l, err
 }
-
-// --- POST создание с файлами (без полей темы) ---
 
 type LicensingMediaFile struct {
 	Header      *multipart.FileHeader
@@ -78,10 +53,7 @@ type LicensingMediaFile struct {
 	Filename    string
 }
 
-func (r *Repository) CreateLicensingDraft(
-	creatorID uint,
-	title, description string,
-) (ds.Licensing, error) {
+func (r *Repository) CreateLicensingDraft(creatorID uint, title, description string) (ds.Licensing, error) {
 	l := ds.Licensing{
 		Title:       title,
 		Description: description,
@@ -136,8 +108,6 @@ func (r *Repository) buildLicensingMediaURL(filename string) string {
 	return fmt.Sprintf("http://localhost:9000/%s/%s", r.minioBucketName, filename)
 }
 
-// --- PUT публикация (здесь заполняем поля темы) ---
-
 func (r *Repository) PublishLicensing(id int, creatorID uint, req ds.PublishLicensingRequest) error {
 	updates := map[string]interface{}{
 		"status":       "published",
@@ -165,9 +135,8 @@ func (r *Repository) PublishLicensing(id int, creatorID uint, req ds.PublishLice
 	return nil
 }
 
-// --- DELETE soft delete ---
-
 func (r *Repository) DeleteLicensing(id int, creatorID uint) error {
+	logrus.Infof("DeleteLicensing: userID=%d", creatorID)
 	result := r.db.Exec(
 		"UPDATE licensings SET status = 'deleted' WHERE id = $1 AND creator_id = $2 AND status != 'deleted'",
 		id, creatorID,
@@ -181,8 +150,6 @@ func (r *Repository) DeleteLicensing(id int, creatorID uint) error {
 	return nil
 }
 
-// --- Лайки ---
-
 func (r *Repository) LikeLicensing(userID, licensingID uint) error {
 	like := ds.Like{UserID: userID, LicensingID: licensingID}
 	return r.db.Create(&like).Error
@@ -195,22 +162,14 @@ func (r *Repository) UnlikeLicensing(userID, licensingID uint) error {
 
 func (r *Repository) IsLicensingLiked(userID, licensingID uint) (bool, error) {
 	var count int64
-	err := r.db.Model(&ds.Like{}).
-		Where("user_id = ? AND licensing_id = ?", userID, licensingID).
-		Count(&count).Error
-	if err != nil {
-		return false, err
-	}
-	return count > 0, nil
+	err := r.db.Model(&ds.Like{}).Where("user_id = ? AND licensing_id = ?", userID, licensingID).Count(&count).Error
+	return count > 0, err
 }
 
 func (r *Repository) GetLicensingLikesCount(id uint) (int64, error) {
 	var count int64
 	err := r.db.Model(&ds.Like{}).Where("licensing_id = ?", id).Count(&count).Error
-	if err != nil {
-		return 0, err
-	}
-	return count, nil
+	return count, err
 }
 
 func (r *Repository) GetLicensingsLikesCounts(ids []uint) (map[uint]int64, error) {

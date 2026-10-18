@@ -1,30 +1,42 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"log"
 	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 
+	_ "licensing-cost/docs"
+
 	"licensing-cost/internal/app/config"
 	"licensing-cost/internal/app/dsn"
-	"licensing-cost/internal/app/handler"
 	"licensing-cost/internal/app/repository"
 	"licensing-cost/internal/pkg"
 )
 
+// @title           Licensing Backend API
+// @version         1.0
+// @description     API для работы с моделями лицензирования
+// @host            localhost:8080
+// @BasePath        /api
+// @securityDefinitions.apikey  Bearer
+// @in                          header
+// @name                        Authorization
+// @description                 Введите токен: Bearer {token}
 func main() {
 	_ = godotenv.Load()
 
-	router := gin.Default()
+	ctx := context.Background()
+
 	conf, err := config.NewConfig()
 	if err != nil {
-		logrus.Fatalf("config error: %v", err)
+		log.Fatalf("config error: %v", err)
 	}
 
-	rep, errRep := repository.New(&repository.RepositorySettings{
+	repo, err := repository.New(&repository.RepositorySettings{
 		PostgresDSN:     dsn.FromEnv(),
 		MinioEndpoint:   os.Getenv("MINIO_ENDPOINT"),
 		MinioAccessKey:  os.Getenv("MINIO_ACCESS_KEY"),
@@ -32,11 +44,17 @@ func main() {
 		MinioBucketName: os.Getenv("MINIO_BUCKET_NAME"),
 		MinioUseSSL:     os.Getenv("MINIO_USE_SSL") == "true",
 	})
-	if errRep != nil {
-		logrus.Fatalf("repository error: %v", errRep)
+	if err != nil {
+		log.Fatalf("repo error: %v", err)
 	}
-	fmt.Println("Server initialized")
 
-	hand := handler.NewHandler(rep)
-	pkg.NewApp(conf, router, hand).RunApp()
+	router := gin.Default()
+	app, err := pkg.NewApp(ctx, conf, router, repo)
+	if err != nil {
+		log.Fatalf("app error: %v", err)
+	}
+
+	logrus.Info("Application start!")
+	app.RunApp()
+	logrus.Info("Application terminated!")
 }

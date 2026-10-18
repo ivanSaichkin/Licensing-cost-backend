@@ -2,6 +2,8 @@ package config
 
 import (
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
@@ -11,11 +13,25 @@ import (
 type Config struct {
 	ServiceHost string
 	ServicePort int
+	Redis       RedisConfig
+	JWT         JWTConfig
+}
+
+type RedisConfig struct {
+	Host        string
+	Password    string
+	Port        int
+	User        string
+	DialTimeout time.Duration
+	ReadTimeout time.Duration
+}
+
+type JWTConfig struct {
+	Token     string
+	ExpiresIn time.Duration
 }
 
 func NewConfig() (*Config, error) {
-	var err error
-
 	configName := "config"
 	_ = godotenv.Load()
 	if os.Getenv("CONFIG_NAME") != "" {
@@ -28,18 +44,23 @@ func NewConfig() (*Config, error) {
 	viper.AddConfigPath(".")
 	viper.WatchConfig()
 
-	err = viper.ReadInConfig()
-	if err != nil {
+	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
 	}
 
 	cfg := &Config{}
-	err = viper.Unmarshal(cfg)
-	if err != nil {
+	if err := viper.Unmarshal(cfg); err != nil {
 		return nil, err
 	}
 
-	log.Info("config parsed")
+	cfg.Redis.Host = os.Getenv("REDIS_HOST")
+	cfg.Redis.Port, _ = strconv.Atoi(os.Getenv("REDIS_PORT"))
+	cfg.Redis.User = os.Getenv("REDIS_USER")
+	cfg.Redis.Password = os.Getenv("REDIS_PASSWORD")
 
+	cfg.JWT.Token = os.Getenv("JWT_TOKEN")
+	cfg.JWT.ExpiresIn, _ = time.ParseDuration(os.Getenv("JWT_EXPIRES_IN"))
+
+	log.Info("config parsed")
 	return cfg, nil
 }
